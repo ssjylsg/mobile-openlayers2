@@ -2365,7 +2365,7 @@ OpenLayers.Map = OpenLayers.Class({
         if (this.baseLayer != null) {
             zoom = this.baseLayer.getZoomForExtent(bounds, closest);
         }
-        return zoom;
+        return parseInt(zoom);
     },
 
     /**
@@ -2408,7 +2408,7 @@ OpenLayers.Map = OpenLayers.Class({
         if (this.baseLayer != null) {
             zoom = this.baseLayer.getZoomForResolution(resolution, closest);
         }
-        return zoom;
+        return Math.round(zoom);
     },
 
   /********************************************************/
@@ -2434,6 +2434,7 @@ OpenLayers.Map = OpenLayers.Class({
         // non-API arguments:
         // xy - {<OpenLayers.Pixel>} optional zoom origin
         
+        zoom = Math.round(zoom);
         var map = this;
         if (map.isValidZoomLevel(zoom)) {
             if (map.baseLayer.wrapDateLine) {
@@ -2459,7 +2460,7 @@ OpenLayers.Map = OpenLayers.Class({
                     xy = {x: size.w / 2, y: size.h / 2};
                 }
                 map.zoomTween.start(start, end, map.zoomDuration, {
-                    minFrameRate: 50, // don't spend much time zooming
+                        minFrameRate: 45, // don't spend much time zooming
                     callbacks: {
                         eachStep: function(data) {
                             var containerOrigin = map.layerContainerOriginPx,
@@ -2471,14 +2472,24 @@ OpenLayers.Map = OpenLayers.Class({
                         done: function(data) {
                             map.applyTransform();
                             var resolution = map.getResolution() / data.scale,
-                                newZoom = map.getZoomForResolution(resolution, true),
-                                newCenter = data.scale === 1 ? center :
-                                        map.getZoomTargetCenter(xy, resolution);
-                            map.moveTo(newCenter, newZoom);
+                                    zoom = map.getZoomForResolution(resolution, true);
+                                if (zoom > map.maxZoom) {
+                                    zoom = map.maxZoom;
+                                }
+                                if (zoom < map.minZoom) {
+                                    zoom = map.minZoom;
+                                }
+                                resolution = map.getResolutionForZoom(zoom);
+                                map.moveTo(map.getZoomTargetCenter(xy, resolution), zoom, {
+                                    zoomChanged: true
+                                });
                         }
                     }
                 });
             } else {
+                var center = xy ?
+                    map.getZoomTargetCenter(xy, map.getResolutionForZoom(zoom)) :
+                    null;
                 map.setCenter(center, zoom);
             }
         }

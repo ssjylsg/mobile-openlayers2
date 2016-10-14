@@ -1,5 +1,6 @@
 window.NPMobile = {
-    ISPOINTCONVERT: true
+    ISPOINTCONVERT: true,
+    VERSION: '1.0.0'
 };
 NPMobile.Geometry = {};
 NPMobile.Util = {};
@@ -30,15 +31,44 @@ NPMobile.Util.extend = function(target, options) {
     }
     return target;
 };
-NPMobile.Layers = {};
+NPMobile.Layers = {
+    LAYERID: 0
+};
+
+/**
+ * 基础图层 抽象图层
+ * @class  NPMobile.Layers.Layer
+ * @constructor
+ */
+NPMobile.Layers.Layer = function(name) {
+    this.id = (NPMobile.Layers.LAYERID++) + "_" + name;
+};
+NPMobile.Layers.Layer.prototype = {
+    /** 
+     * Hide or show the Layer
+     * @param {Boolean} display
+     */
+    display: function(display) {
+        this._layer.display(display);
+    },
+    getId: function() {
+        return this.id;
+    }
+};
 /**
  * 自定义图层
  * @class  NPMobile.Layers.CustomerLayer
+ * @extends {NPMobile.Layers.Layer}
  * @constructor
  * @param {stirng} name 图层名称唯一
  */
 NPMobile.Layers.CustomerLayer = function(name) {
-    this._layer = new OpenLayers.Layer.Vector(name || "默认图层1");
+    NPMobile.Layers.Layer.call(this, name);
+    this._layer = new OpenLayers.Layer.Vector(name || "默认图层1", {
+        rendererOptions: {
+            zIndexing: true
+        }
+    });
     this._layer.events.register("featureclick", this, function(e) {
         if (e.feature._click) {
             e.feature._click(e.feature.data);
@@ -67,13 +97,6 @@ NPMobile.Layers.CustomerLayer.prototype = {
      */
     removeAllOverlays: function() {
         this._layer.removeAllFeatures();
-    },
-    /** 
-     * Hide or show the Layer
-     * @param {Boolean} display   
-     */
-    display: function(display) {
-        this._layer.display(display);
     }
 };
 
@@ -115,6 +138,7 @@ NPMobile.Geometry.ClusterMarker.prototype = {
 /**
  * 聚合图层
  * @class NPMobile.Layers.ClusterLayer
+ * @extends {NPMobile.Layers.Layer}
  * @constructor
  * @param {stirng} name 图层名称唯一
  * @param {object} opts
@@ -134,6 +158,7 @@ NPMobile.Geometry.ClusterMarker.prototype = {
  * @param {number} opts.defaultStyle.customLabelOffset.width
  */
 NPMobile.Layers.ClusterLayer = function(name, opts) {
+    NPMobile.Layers.Layer.call(this, name, opts);
     this._events = {
         '_getUrl': function() {
             return 'img/Flag.png'
@@ -152,6 +177,7 @@ NPMobile.Layers.ClusterLayer = function(name, opts) {
         distance: 200,
         clusterClickModel: 'zoom',
         isAsynchronous: false,
+        zIndexing: true,
         defaultStyle: {
             fontColor: 'white',
             fontSize: ''
@@ -296,7 +322,8 @@ NPMobile.Layers.ClusterLayer = function(name, opts) {
             },
             getTitle: function(f) {
                 var counts = f.getCount();
-                return !counts && that._trigger('getTitle', f.getData());
+                var title = !counts && that._trigger('getTitle', f.getData());
+                return title || '';
             },
             getlabelbg: function(f) {
                 var counts = f.getCount();
@@ -381,7 +408,7 @@ NPMobile.Layers.ClusterLayer.prototype = {
  */
 NPMobile.Geometry.Point = function(lon, lat) {
     this.lon = Number(lon),
-        this.lat = Number(lat);      
+        this.lat = Number(lat);
 };
 /**
  * 创建标注 
@@ -465,6 +492,14 @@ NPMobile.Geometry.Marker.prototype = {
      */
     register: function(type, listener) {
         this._vector["_" + type] = listener;
+    },
+    /**
+     * 注销事件
+     * @event
+     * @param  {string} type     事件类型 click     
+     */
+    unregister: function(type) {
+        this._vector["_" + type] = null;
     }
 };
 /**
@@ -475,6 +510,7 @@ NPMobile.Geometry.Marker.prototype = {
  * @param  {object} mapInfo 指地图配置参数信息，此对象直接由读取NPGISSever生成的配置文件而来   
  */
 NPMobile.Map = function(mapContainer, mapInfo) {
+    this._events = [];
     mapInfo.mapOpts.controls = [new OpenLayers.Control.TouchNavigation({
         dragPanOptions: {
             enableKinetic: true
@@ -491,7 +527,11 @@ NPMobile.Map = function(mapContainer, mapInfo) {
         sattilateLayer: this._getLayers(mapInfo.sattilateLayer)
     };
     this._map.addLayers(this._mapJson.vectorLayer);
-    this._defaultLayer = new OpenLayers.Layer.Vector("_默认图层");
+    this._defaultLayer = new OpenLayers.Layer.Vector("_默认图层", {
+        rendererOptions: {
+            zIndexing: true
+        }
+    });
     this._map.addLayers([this._defaultLayer]);
 
     if (this._map.getProjection() === "EPSG:900913" && mapInfo.mapOpts.centerPoint[0] < 180) {
@@ -513,6 +553,39 @@ NPMobile.Map = function(mapContainer, mapInfo) {
     NPMobile.T.map = this._map;
 };
 NPMobile.Map.prototype = {
+    /**
+     * 注册事件
+     * @event
+     * @param  {string} type     事件类型 click 
+     * @param  {functon} listener      
+     */
+    register: function(type, listener) {
+        if (type === 'click' && listener) {
+            var clickFun = function(f) {
+                try {
+                    listener(NPMobile.T.getPoint(this, this.getLonLatFromLayerPx(f.xy)));
+                } catch (e) {
+
+                }
+                return false;
+            };
+            this._events["_" + type] = clickFun;
+            this._map.events.register('click', this._map, clickFun);
+        } else {
+            this._events["_" + type] = listener;
+        }
+    },
+    /**
+     * 注销事件
+     * @event
+     * @param  {string} type     事件类型 click     
+     */
+    unregister: function(type) {
+        if (type === 'click') {
+            this._map.events.unregister('click', this._map, this._events["_" + type]);
+        }
+        this._events["_" + type] = null;
+    },
     /**
      * 获取最小Zoom
      * @return {number} 
@@ -794,19 +867,6 @@ NPMobile.Map.prototype = {
         }, style);
         this._defaultLayer.addFeatures([vector]);
         vector._click = clickFun;
-    },
-    /**
-     * 注册事件
-     * @event
-     * @param  {string} type     事件类型 click 
-     * @param  {functon} listener      
-     */
-    register: function(type, listener) {
-        if (type === 'click' && listener) {
-            this._map.events.register('click', this._map, function(f) {
-                listener(NPMobile.T.getPoint(this, this.getLonLatFromLayerPx(f.xy)));
-            });
-        }
     }
 };
 (function() {
