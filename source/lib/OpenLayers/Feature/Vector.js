@@ -366,7 +366,12 @@ OpenLayers.Feature.Vector = OpenLayers.Class(OpenLayers.Feature, {
     },
     getCount: function() {
         var f = this;
-        return f.attributes.count ? (f.attributes.count === 1 ? '' : f.attributes.count) : '';
+        var count = f.attributes.count ? (f.attributes.count === 1 ? '' : f.attributes.count) : '';
+        if (count != '') {
+            return count > 20 ? "20+" : count + "";
+        } else {
+            return count;
+        }
     },
     getData: function() {
         var f = this;

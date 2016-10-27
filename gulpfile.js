@@ -136,14 +136,14 @@ gulp.task('minifyjs', function() {
     gulp.src('NPMobileMap.js')
         .pipe(concat('NPMobileMap.js'))
         .pipe(rename('NPMobileMap.js'))
-        //.pipe(uglify())
+       // .pipe(uglify())
         .pipe(gulp.dest('./dist/'));
 
 
     return gulp.src(lib)
         .pipe(concat('OpenLayers.js'))
         .pipe(rename('OpenLayers.js'))
-        //  .pipe(uglify())
+         // .pipe(uglify())
         .pipe(gulp.dest('./dist/'));
 });
 gulp.task('watch', function() {

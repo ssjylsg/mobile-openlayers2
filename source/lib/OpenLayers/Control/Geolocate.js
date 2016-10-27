@@ -150,13 +150,17 @@ OpenLayers.Control.Geolocate = OpenLayers.Class(OpenLayers.Control, {
             this.map.getProjectionObject()
         );
         if (this.bind) {
-            this.map.setCenter(center);
+            this.map.setCenter(center,Math.ceil(this.map.maxZoom-2));
         }
         this.events.triggerEvent("locationupdated", {
-            position: position,
+            position: {
+                lon:position.coords.longitude,
+                lat:position.coords.latitude
+            },
             point: new OpenLayers.Geometry.Point(
                 center.lon, center.lat
-            )
+            ),
+            accuracy:position.coords.accuracy
         });
     },
 

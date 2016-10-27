@@ -1,6 +1,15 @@
 window.NPMobile = {
     ISPOINTCONVERT: true,
-    VERSION: '1.0.0'
+    VERSION: '1.0.0',
+    inherits: function(childCtor, parentCtor) {
+        var p = parentCtor.prototype;
+        var c = childCtor.prototype;
+        for (var i in p) {
+            c[i] = p[i];
+        }
+        c.uber = p;
+        childCtor.prototype.constructor = childCtor;
+    }
 };
 NPMobile.Geometry = {};
 NPMobile.Util = {};
@@ -41,18 +50,124 @@ NPMobile.Layers = {
  * @constructor
  */
 NPMobile.Layers.Layer = function(name) {
-    this.id = (NPMobile.Layers.LAYERID++) + "_" + name;
+    this.id = null;
 };
 NPMobile.Layers.Layer.prototype = {
     /** 
-     * Hide or show the Layer
-     * @param {Boolean} display
+     * 显示/隐藏图层
+     * @param {Boolean}   display  
      */
     display: function(display) {
         this._layer.display(display);
     },
     getId: function() {
         return this.id;
+    }
+};
+/**
+ * 覆盖物抽象类
+ * @class  NPMobile.Geometry.Curve
+ * @constructor
+ */
+NPMobile.Geometry.Curve = function() {
+    this._vector = null;
+    this.id = null;
+};
+NPMobile.Geometry.Curve.prototype = {
+    _castPoints: function(points) {
+        if (!points) {
+            return [];
+        }
+        var result = [],
+            point;
+        for (var i = 0; i < points.length; ++i) {
+            point = points[i];
+            result.push(new OpenLayers.Geometry.Point(point.lon, point.lat));
+        }
+        return result;
+    },
+    /**
+     * 刷新      
+     */
+    refresh: function() {
+        var layer = this._vector.layer;
+        if (layer) {
+            layer.drawFeature(this._vector);
+        }
+    },
+    /**
+     * 显示     
+     */
+    show: function() {
+        this._vector.style.display = 'block';
+        this.refresh();
+    },
+    /**
+     * 隐藏     
+     */
+    hide: function() {
+        this._vector.style.display = 'none';
+        this.refresh();
+    },
+    /**
+     * 注册事件
+     * @event
+     * @param  {string} type     事件类型 click 
+     * @param  {functon} listener      
+     */
+    register: function(type, listener) {
+        this._vector["_" + type] = listener;
+    },
+    /**
+     * 注销事件
+     * @event
+     * @param  {string} type     事件类型 click     
+     */
+    unregister: function(type) {
+        this._vector["_" + type] = null;
+    },
+    /**
+     * 获取当前覆盖物点集合     
+     */
+    getPoints: function() {
+        if (!this._vector) {
+            return [];
+        }
+        if (this._vector.geometry && (this._vector.geometry instanceof OpenLayers.Geometry.Point)) {
+            return NPMobile.Geometry.Point.getPoint(this._vector.geometry.x, this._vector.geometry.y)
+        }
+        if (this._vector.geometry && (this._vector.geometry instanceof OpenLayers.Geometry.Polygon)) {
+            var list = [];
+            for (var j = 0; j < this._vector.geometry.components.length; j++) {
+                var potins = this._vector.geometry.components[j].components;
+                var result = [];
+                for (var i = 0; i < potins.length; i++) {
+                    result.push(NPMobile.Geometry.Point.getPoint(potins[i].x, potins[i].y));
+                }
+                list.push(result);
+            }
+            return list.length === 1 ? list[0] : list;
+        }
+        if (this._vector.geometry && (this._vector.geometry instanceof OpenLayers.Geometry.LineString)) {
+            var points = this._vector.geometry.components;
+            var lineResult = [];
+            for (var i = 0; i < points.length; i++) {
+                lineResult.push(NPMobile.Geometry.Point.getPoint(points[i].x, points[i].y));
+            }
+            return lineResult;
+        }
+    },
+    /**
+     * 获取长度     
+     */
+    getLength: function() {
+        return this._vector.geometry.getLength();
+    },
+    /**
+     * 获取面积   
+     */
+    getArea: function() {
+        return this._vector.geometry.getArea();
     }
 };
 /**
@@ -71,7 +186,7 @@ NPMobile.Layers.CustomerLayer = function(name) {
     });
     this._layer.events.register("featureclick", this, function(e) {
         if (e.feature._click) {
-            e.feature._click(e.feature.data);
+            e.feature._click.call(e.feature.data);
         }
     });
 };
@@ -99,7 +214,7 @@ NPMobile.Layers.CustomerLayer.prototype = {
         this._layer.removeAllFeatures();
     }
 };
-
+NPMobile.inherits(NPMobile.Layers.CustomerLayer, NPMobile.Layers.Layer);
 /**
  * 聚合Marker
  * @class  NPMobile.Geometry.ClusterMarker
@@ -132,6 +247,23 @@ NPMobile.Geometry.ClusterMarker.prototype = {
         var r = this._clientData || {};
         r._visible = this._visible;
         return r;
+    },
+    /**
+     * 设置样式，比如换图片
+     * @return {object} style
+     * @param  {string}  style.externalGraphic  图片路径 
+     * @param  {number}  style.graphicXOffset    X 偏移量
+     * @param  {number}  style.graphicYOffset Y偏移量
+     * @param  {number}  style.graphicWidth   图片宽度
+     * @param  {number}  style.graphicHeight  图片高度 
+     */
+    changeStyle: function(style) {
+        if (this._apiObj) {
+            for (var k in style) {
+                this._apiObj.style[k] = style[k];
+            }
+            this._apiObj.layer.drawFeature(this._apiObj);
+        }
     }
 };
 
@@ -188,31 +320,11 @@ NPMobile.Layers.ClusterLayer = function(name, opts) {
     var layerOpts = {
         isClusterLayer: true,
         eventListeners: {
-            featureclick: function(e) {
+            featureselected: function(e) {
                 var f = e.feature;
                 var clusters = f.layer;
                 if (f.cluster && f.cluster.length > 1) {
-                    // clusterClickModel 聚合点位click 模式 
-                    if (opts.clusterClickModel === 'zoom') {
-                        if (!opts.selectZoom) {
-                            var px = clusters.map.getPixelFromLonLat({
-                                lon: f.geometry.getCentroid().x,
-                                lat: f.geometry.getCentroid().y
-                            });
-                            clusters.map.zoomTo(clusters.map.getZoom() + 1, px);
-                            return false;
-                        } else {
-                            var p = new OpenLayers.LonLat(f.geometry.x, f.geometry.y);
-                            clusters.map.setCenter(p, opts.selectZoom);
-                            return false;
-                        }
-                    } else {
-                        // 散开逻辑
-                        if (f.cluster.length > 500) {
-                            window.alert("聚合点位过多，请放大地图");
-                            return false;
-                        }
-                    }
+                    return;
                 } else {
                     if (f.attributes.count > 0 && opts.clusterClickModel === 'zoom') {
                         if (!opts.selectZoom) {
@@ -241,7 +353,7 @@ NPMobile.Layers.ClusterLayer = function(name, opts) {
                     }
                 }
                 if ((!f.cluster || f.cluster.length < 2) && clientData && !f.data.isStatistics) {
-                    that._trigger('click', clientData, e.feature.style.externalGraphic === '' || typeof(e.feature.style.externalGraphic) === 'undefined');
+                    that._trigger('click', clientData.id, e.feature.style.externalGraphic === '' || typeof(e.feature.style.externalGraphic) === 'undefined');
                 }
                 return false;
             }
@@ -354,8 +466,8 @@ NPMobile.Layers.ClusterLayer = function(name, opts) {
 
 NPMobile.Layers.ClusterLayer.prototype = {
     /** 
-     * Hide or show the Layer
-     * @param {Boolean} display   
+     * 显示/隐藏图层
+     * @param {Boolean}   display  
      */
     display: function(display) {
         this._layer.display(display);
@@ -369,6 +481,15 @@ NPMobile.Layers.ClusterLayer.prototype = {
             }
             return fun.apply(this, args);
         }
+    },
+    /**
+     * 注销事件
+     * @event
+     * @param  {string} type   事件类型  
+     */
+    unregister: function(type) {
+        this._events["_" + type] = null;
+        return this;
     },
     /**
      * 注册事件
@@ -398,6 +519,72 @@ NPMobile.Layers.ClusterLayer.prototype = {
     },
 
 };
+NPMobile.inherits(NPMobile.Layers.ClusterLayer, NPMobile.Layers.Layer);
+NPMobile.Geometry.MultiLineString = function() {
+
+};
+NPMobile.inherits(NPMobile.Geometry.MultiLineString, NPMobile.Geometry.Curve);
+/**
+ * 线段
+ * @
+ * @param {NPMobile.Geometry.Point[]} points
+ * @param {object} style  线段样式
+ * @param {string} style.strokeColor    默认red
+ * @param {number} style.strokeWidth    默认2
+ * @param {string} style.strokeDashstyle [dot | dash | dashdot | longdash | longdashdot | solid]
+ * @param {number} style.pointRadius 默认6
+ * @param {string} style.strokeLinecap [butt | round | square]
+ */
+NPMobile.Geometry.LineString = function(points, style) {
+    NPMobile.Geometry.Curve.call(points, style);
+    style = NPMobile.Util.extend(style, {
+        "graphicName": "triangle",
+        "strokeColor": 'red',
+        "strokeWidth": 2,
+        "strokeDashstyle": "solid",
+        "pointRadius": 6,
+        'strokeLinecap': 'round'
+    });
+    var tempPoint;
+    var l = new OpenLayers.Geometry.LineString(this._castPoints(NPMobile.T.setPoints(this._map, points)));
+    this._vector = new OpenLayers.Feature.Vector(l, this, style);
+};
+NPMobile.inherits(NPMobile.Geometry.LineString, NPMobile.Geometry.Curve);
+/**
+ * @class NPMobile.Geometry.Polygon
+ * @extends {NPMobile.Geometry.Curve}
+ * @constructor
+ * @param {NPMobile.Geometry.Point[]} points
+ * @param {object} style  线段样式
+ * @param {string} style.fillColor    默认red
+ * @param {number} style.fillOpacity 1
+ * @param {number} style.strokeWidth    默认1
+ * @param {string} style.strokeDashstyle [dot | dash | dashdot | longdash | longdashdot | solid]
+ * @param {number} style.pointRadius 默认6
+ * @param {string} style.strokeLinecap [butt | round | square]
+ */
+NPMobile.Geometry.Polygon = function(points, style) {
+    NPMobile.Geometry.Curve.call(points, style);
+    style = NPMobile.Util.extend(style, {
+        fill: true,
+        fillColor: 'red',
+        fillOpacity: 1,
+        strokeColor: '#ee9900',
+        strokeWidth: 1,
+        strokeOpacity: 1,
+        pointRadius: 6,
+        label: ''
+    });
+    points = NPMobile.T.setPoints(null, points);
+    var lr = new OpenLayers.Geometry.LinearRing(this._castPoints(points));
+    var pg = new OpenLayers.Geometry.Polygon(lr);
+    this._vector = new OpenLayers.Feature.Vector(pg, this, style);
+};
+NPMobile.inherits(NPMobile.Geometry.Polygon, NPMobile.Geometry.Curve);
+NPMobile.Geometry.MultiPolygon = function() {
+
+};
+NPMobile.inherits(NPMobile.Geometry.MultiPolygon, NPMobile.Geometry.Curve);
 
 /**
  * Point
@@ -410,9 +597,25 @@ NPMobile.Geometry.Point = function(lon, lat) {
     this.lon = Number(lon),
         this.lat = Number(lat);
 };
+
+NPMobile.Geometry.Point.setPoint = function(lon, lat) {
+    return NPMobile.T.setPoint(null, {
+        lon: lon,
+        lat: lat
+    });
+};
+
+NPMobile.Geometry.Point.getPoint = function(lon, lat) {
+    return NPMobile.T.getPoint(null, {
+        lon: lon,
+        lat: lat
+    });
+};
+
 /**
  * 创建标注 
  * @class  NPMobile.Geometry.Marker
+ * @extends {NPMobile.Geometry.Curve}
  * @constructor
  * @param  {NPMobile.Geometry.Point}   point      [坐标点]
  * @param  {object}  markerParam
@@ -424,6 +627,7 @@ NPMobile.Geometry.Point = function(lon, lat) {
  * @param  {number}  markerParam.graphicZIndex  Zindex  
  */
 NPMobile.Geometry.Marker = function(point, markerParam) {
+    NPMobile.Geometry.Curve.call(this, point);
     var style = {
         graphicWidth: markerParam.graphicWidth,
         graphicHeight: markerParam.graphicHeight,
@@ -460,48 +664,9 @@ NPMobile.Geometry.Marker.prototype = {
             this._vector.style[k] = style[k];
         }
         this.refresh();
-    },
-    /**
-     * 刷新      
-     */
-    refresh: function() {
-        var layer = this._vector.layer;
-        if (layer) {
-            layer.drawFeature(this._vector);
-        }
-    },
-    /**
-     * 显示     
-     */
-    show: function() {
-        this._vector.style.display = 'block';
-        this.refresh();
-    },
-    /**
-     * 隐藏     
-     */
-    hide: function() {
-        this._vector.style.display = 'none';
-        this.refresh();
-    },
-    /**
-     * 注册事件
-     * @event
-     * @param  {string} type     事件类型 click 
-     * @param  {functon} listener      
-     */
-    register: function(type, listener) {
-        this._vector["_" + type] = listener;
-    },
-    /**
-     * 注销事件
-     * @event
-     * @param  {string} type     事件类型 click     
-     */
-    unregister: function(type) {
-        this._vector["_" + type] = null;
     }
 };
+NPMobile.inherits(NPMobile.Geometry.Marker, NPMobile.Geometry.Curve);
 /**
  * 新建地图，一键式生成地图
  * @class  NPMobile.Map
@@ -511,16 +676,72 @@ NPMobile.Geometry.Marker.prototype = {
  */
 NPMobile.Map = function(mapContainer, mapInfo) {
     this._events = [];
+    this._selectControl = null;
+    this._layers = [];
+    var geolocate = new OpenLayers.Control.Geolocate({
+        "id": "iploc",
+        bind: false,
+        geolocationOptions: {
+            enableHighAccuracy: false,
+            maximumAge: 0,
+            timeout: 7000
+        }
+    });
     mapInfo.mapOpts.controls = [new OpenLayers.Control.TouchNavigation({
         dragPanOptions: {
             enableKinetic: true
         }
-    }), new OpenLayers.Control.Zoom()];
+    }), geolocate, new OpenLayers.Control.Zoom()];
     mapInfo.mapOpts.centerPoint = mapInfo.mapOpts.centerPoint || mapInfo.vectorLayer[0].layerOpt.centerPoint;
     mapInfo.mapOpts.zoom = mapInfo.mapOpts.defaultZoom || mapInfo.mapOpts.minZoom;
 
     mapInfo.mapOpts.originCenter = mapInfo.mapOpts.centerPoint;
     this._map = new OpenLayers.Map(mapContainer, mapInfo.mapOpts);
+
+    $(".icon").click(function() {
+        console.log('click');
+        if (geolocate.active) {
+            geolocate.getCurrentLocation();
+        } else {
+            geolocate.activate();
+        }
+    });
+    var that = this;
+    var vector = new OpenLayers.Layer.Vector("Vector Layer", {});
+    this._map.addLayer(vector);
+    geolocate.events.register("locationfailed", this, function(e) {
+        console.error(e.error.message);
+    });
+    geolocate.events.register("locationupdated", this, function(e) {
+        that.setCenter(e.position, that.getMaxZoom());
+        var point = NPMobile.T.setPoint(that._map, e.position);
+        vector.removeAllFeatures();
+        vector.addFeatures([
+            new OpenLayers.Feature.Vector(
+                new OpenLayers.Geometry.Point(point.lon, point.lat), {}, {
+                    strokeOpacity: 1,
+                    strokeColor: 'rgb(23,146,255)',
+                    fillColor: 'rgb(23,146,255)',
+                    pointRadius: 5
+                }
+            ),
+            new OpenLayers.Feature.Vector(
+                OpenLayers.Geometry.Polygon.createRegularPolygon(
+                    new OpenLayers.Geometry.Point(point.lon, point.lat),
+                    that._map.getUnits() == 'm' ? 15 : 0.0001,
+                    50,
+                    0
+                ), {}, {
+                    fillOpacity: 0.3,
+                    fillColor: 'rgb(23,146,255)',
+                    strokeColor: 'rgb(23,146,255)',
+                    strokeOpacity: 0.3
+                }
+            )
+        ]);
+
+    });
+
     this._mapJson = {
         map: this._map,
         vectorLayer: this._getLayers(mapInfo.vectorLayer),
@@ -553,6 +774,9 @@ NPMobile.Map = function(mapContainer, mapInfo) {
     NPMobile.T.map = this._map;
 };
 NPMobile.Map.prototype = {
+    donothing: function() {
+
+    },
     /**
      * 注册事件
      * @event
@@ -574,6 +798,9 @@ NPMobile.Map.prototype = {
         } else {
             this._events["_" + type] = listener;
         }
+    },
+    addOverlay: function(overlayer) {
+        this._defaultLayer.addFeatures([overlayer._vector]);
     },
     /**
      * 注销事件
@@ -606,6 +833,21 @@ NPMobile.Map.prototype = {
      */
     addLayer: function(layer) {
         this._map.addLayers([layer._layer]);
+
+        this._layers.push(layer._layer);
+        if (!this._selectControl) {
+            this._selectControl = new OpenLayers.Control.SelectFeature(this._layers, {
+                autoActivate: true,
+                onSelect: function(feature) {
+                    if (feature._click) {
+                        feature._click(feature.data);
+                    }
+                }
+            });
+            this._map.addControl(this._selectControl);
+        } else {
+            this._selectControl.setLayer(this._layers);
+        }
     },
     /**
      * 全图
@@ -1166,7 +1408,7 @@ NPMobile.Map.prototype = {
     o.setPoints = function(map, points) {
         var result = [];
         for (var i = 0; i < points.length; i++) {
-            result.push(NPMapLib.T.setPoint(map, points[i]));
+            result.push(NPMobile.T.setPoint(map, points[i]));
         }
         return result;
     };
@@ -1197,17 +1439,17 @@ NPMobile.Map.prototype = {
     o.getPoints = function(map, points) {
         var result = [];
         for (var i = 0; i < points.length; i++) {
-            result.push(NPMapLib.T.getPoint(map, points[i]));
+            result.push(NPMobile.T.getPoint(map, points[i]));
         }
         return result;
     };
     o.setExtent = function(map, extent) {
         if (map.getProjection() == "EPSG:900913") {
-            var point0 = NPMapLib.T.setPoint(map, {
+            var point0 = NPMobile.T.setPoint(map, {
                 lon: extent.left,
                 lat: extent.top
             });
-            var point1 = NPMapLib.T.setPoint(map, {
+            var point1 = NPMobile.T.setPoint(map, {
                 lon: extent.right,
                 lat: extent.bottom
             });
@@ -1220,11 +1462,11 @@ NPMobile.Map.prototype = {
 
     o.getExtent = function(map, extent) {
         if (map.getProjection() == "EPSG:900913") {
-            var point0 = NPMapLib.T.getPoint(map, {
+            var point0 = NPMobile.T.getPoint(map, {
                 lon: extent.left,
                 lat: extent.top
             });
-            var point1 = NPMapLib.T.getPoint(map, {
+            var point1 = NPMobile.T.getPoint(map, {
                 lon: extent.right,
                 lat: extent.bottom
             });
@@ -1236,3 +1478,102 @@ NPMobile.Map.prototype = {
     };
 
 })();
+
+
+window.NPMobileHelper = {
+    _map: null,
+    _objs: {
+
+    },
+    _createClass: function(obj) {
+        var result = null;
+        switch (obj.className) {
+            case 'NPMobile.Layers.CustomerLayer':
+                result = new NPMobile.Layers.CustomerLayer(obj.name);
+                break;
+            case "NPMobile.Geometry.Marker":
+                result = new NPMobile.Geometry.Marker(obj.point, obj.options);
+                break;
+            case "NPMobile.Geometry.Point":
+                result = new NPMobile.Geometry.Point(obj.lon, obj.lat);
+                return result;
+            case 'NPMobile.Map':
+                if (typeof(obj.mapConfig) == 'string') {
+                    $.ajaxSettings.async = false;
+                    $.getJSON(obj.mapConfig, function(json, textStatus) {
+                        obj.mapConfig = json;
+                    });
+                }
+                result = new NPMobile.Map(obj.mapContainer || 'viewerContainer', obj.mapConfig);
+                window.NPMobileHelper._map = result;
+                break;
+            case "NPMobile.Layers.ClusterLayer":
+                obj.options.maxZoom = obj.options.maxZoom || window.NPMobileHelper._map.getMaxZoom();
+                obj.options.selectZoom = obj.options.selectZoom || window.NPMobileHelper._map.getMaxZoom();
+                result = new NPMobile.Layers.ClusterLayer(obj.name, obj.options);
+                result.register('getUrl', function(count) {
+                    if (count != '') {
+                        return obj.options.clusterImage.url;
+                    } else {
+                        return obj.options.singleImage.url;
+                    }
+                });
+                result.register('getImageSize', function(count) {
+                    if (count != '') {
+                        return obj.options.clusterImage.imageSize;
+                    } else {
+                        return obj.options.singleImage.imageSize;
+                    }
+                });
+                result.register('getContent', function() {
+                    return '';
+                });
+                break;
+            case "NPMobile.Geometry.ClusterMarker":
+                result = new NPMobile.Geometry.ClusterMarker(obj.point, null, obj);
+                break;
+        }
+        result.id = obj.id;
+        this._objs[obj.id] = result;
+        return result;
+    },
+
+    callMethod: function() {
+        var args = Array.prototype.slice.call(arguments),
+            obj = args.shift();
+        var np = this._objs[obj.id] || this._createClass(obj);
+        var methodArgs = [];
+        for (var i = 1; i < args.length; i++) {
+            if (typeof(args[i]) == "object" && args[i].className) {
+                methodArgs.push(this._createClass(args[i]));
+            } else if (Array.isArray(args[i])) {
+                var ls = [];
+                for (var j = 0; j < args[i].length; j++) {
+                    var temp = args[i][j];
+                    if (typeof(temp) == "object" && temp.className) {
+                        ls.push(this._createClass(temp))
+                    } else {
+                        ls.push(temp);
+                    }
+                }
+                methodArgs.push(ls);
+            } else {
+                methodArgs.push(args[i]);
+            }
+        }
+        if (args[0] === 'register' || args[0] === 'unregister') {            
+            np[args[0]](methodArgs[0], function() {
+                var data = { id: np.id, eventType: methodArgs[0], args: Array.prototype.slice.call(arguments) };               
+                window.WebViewJavascriptBridge.callHandler(
+                    'NPMobileHelper.Event.Call', data,
+                    function(responseData) {
+
+                    }
+                );
+            });
+            return "";
+        }
+        var result = np[args[0]].apply(np, methodArgs);
+        return JSON.stringify(result);        
+    }
+}
