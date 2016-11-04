@@ -515,7 +515,6 @@ NPMobile.Layers.ClusterLayer.prototype = {
         this._layer.events.triggerEvent("beforefeaturesadded", {
             features: markers
         });
-        return this;
     },
 
 };
@@ -840,7 +839,7 @@ NPMobile.Map.prototype = {
                 autoActivate: true,
                 onSelect: function(feature) {
                     if (feature._click) {
-                        feature._click(feature.data);
+                        feature._click(feature.data.id);
                     }
                 }
             });
@@ -1531,6 +1530,9 @@ window.NPMobileHelper = {
                 break;
             case "NPMobile.Geometry.ClusterMarker":
                 result = new NPMobile.Geometry.ClusterMarker(obj.point, null, obj);
+                break;
+            case "NPMobile.Geometry.Polygon":
+                result = new NPMobile.Geometry.Polygon(obj.points,obj.style);
                 break;
         }
         result.id = obj.id;

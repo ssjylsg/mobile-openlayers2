@@ -41,8 +41,9 @@
     }
     </style>
 </head>
-<body>   
-     <div>
+
+<body>
+    <div>
         <div id="viewerContainer"></div>
         <div id="iploc" class="ipLocCont BMap_noprint anchorBR" style="position: absolute; z-index: 10; bottom: 50px; right: 10px; top: auto; left: auto;">
             <div class="titleComm title hide">定位您的位置</div>
@@ -85,35 +86,15 @@
     }
 
     connectWebViewJavascriptBridge(function(bridge) {
-        bridge.init(function(message, responseCallback) {
-            console.log('JS got a message', message);
-            var data = {
-                'Javascript Responds': '测试中文!'
-            };
-            console.log('JS responding with', data);
-            responseCallback(data);
-        });
-
-        bridge.registerHandler("functionInJs", function(data, responseCallback) {
-            try {
-                document.getElementById("show").innerHTML = ("data from Java: = " + data);
-            } catch (ex) {
-                document.getElementById("show").innerHTML = "error";
-            }
-            var responseData = "Javascript Says Right back aka!";
-            responseCallback(responseData);
-        });
-
         bridge.registerHandler("NPMobileHelper.callMethod", function(data, responseCallback) {
             responseCallback(NPMobileHelper.callMethod.apply(NPMobileHelper, data));
         });
-
     });
 
     $("input").click(function(event) {
         var data = {
-            id:1,
-            eventType:'clcik'
+            id: 1,
+            eventType: 'clcik'
         };
         window.WebViewJavascriptBridge.callHandler(
             'NPMobileHelper.Event.Call', data,
