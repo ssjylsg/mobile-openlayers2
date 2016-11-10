@@ -11,6 +11,71 @@ window.NPMobile = {
         childCtor.prototype.constructor = childCtor;
     }
 };
+(function() {
+    "use strict";
+    var Level = {
+        ALL: 0,
+        TRACE: 1,
+        DEBUG: 2,
+        INFO: 3,
+        WARN: 4,
+        ERROR: 5,
+        OFF: 100
+    };
+
+    var Logger = function() {
+        this.level = Level.DEBUG;
+    };
+    Logger.prototype = {
+        log: function(level, msg) {
+            if (this.level <= level) {
+                try {
+                    switch (level) {
+                        case Level.DEBUG:
+                            console.debug(msg);
+                            break;
+                        case Level.ERROR:
+                            console.error(msg);
+                            break;
+                        case Level.WARN:
+                            console.warn(msg);
+                            break;
+                        default:
+                            console.log(msg);
+                            break;
+                    }
+
+                } catch (ex) {
+
+                }
+            }
+        },
+        trace: function(msg) {
+            this.log(Level.TRACE, msg);
+        },
+        debug: function(msg) {
+            this.log(Level.DEBUG, msg);
+        },
+
+        info: function(msg) {
+            this.log(Level.INFO, msg);
+        },
+
+        warn: function(msg) {
+            this.log(Level.WARN, msg);
+        },
+
+        error: function(msg) {
+            this.log(Level.ERROR, msg);
+        }
+    };
+
+    window.NPMobile.logger = new Logger();
+    window.NPMobile.Logging = {
+        Logger: Logger,
+        Level: Level
+    };
+})();
 NPMobile.Geometry = {};
 NPMobile.Util = {};
 NPMobile.Util.clone = function(from, to) {
@@ -773,6 +838,11 @@ NPMobile.Map = function(mapContainer, mapInfo) {
     NPMobile.T.map = this._map;
 };
 NPMobile.Map.prototype = {
+    destroy:function(){
+        this._map.destroy();
+        window.NPMobileHelper._map = null;
+        window.NPMobileHelper._objs = {};
+    },
     donothing: function() {
 
     },
@@ -1499,7 +1569,7 @@ window.NPMobileHelper = {
             case 'NPMobile.Map':
                 if (typeof(obj.mapConfig) == 'string') {
                     $.ajaxSettings.async = false;
-                    $.getJSON(obj.mapConfig, function(json, textStatus) {
+                    $.getJSON(obj.mapConfig + "?v=" + new Date().getTime(), function(json, textStatus) {
                         obj.mapConfig = json;
                     });
                 }
@@ -1532,7 +1602,7 @@ window.NPMobileHelper = {
                 result = new NPMobile.Geometry.ClusterMarker(obj.point, null, obj);
                 break;
             case "NPMobile.Geometry.Polygon":
-                result = new NPMobile.Geometry.Polygon(obj.points,obj.style);
+                result = new NPMobile.Geometry.Polygon(obj.points, obj.style);
                 break;
         }
         result.id = obj.id;
@@ -1563,9 +1633,9 @@ window.NPMobileHelper = {
                 methodArgs.push(args[i]);
             }
         }
-        if (args[0] === 'register' || args[0] === 'unregister') {            
+        if (args[0] === 'register' || args[0] === 'unregister') {
             np[args[0]](methodArgs[0], function() {
-                var data = { id: np.id, eventType: methodArgs[0], args: Array.prototype.slice.call(arguments) };               
+                var data = { id: np.id, eventType: methodArgs[0], args: Array.prototype.slice.call(arguments) };
                 window.WebViewJavascriptBridge.callHandler(
                     'NPMobileHelper.Event.Call', data,
                     function(responseData) {
@@ -1576,6 +1646,8 @@ window.NPMobileHelper = {
             return "";
         }
         var result = np[args[0]].apply(np, methodArgs);
-        return JSON.stringify(result);        
+        return JSON.stringify(result);
     }
 }
+
+

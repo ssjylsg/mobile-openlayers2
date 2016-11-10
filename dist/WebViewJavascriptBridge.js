@@ -67,7 +67,7 @@
 
     // 提供给native调用,该函数作用:获取sendMessageQueue返回给native,由于android不能直接获取返回的内容,所以使用url shouldOverrideUrlLoading 的方式返回内容
     function _fetchQueue() {
-        console.info(sendMessageQueue);
+        window.NPMobile.logger.info(sendMessageQueue);
         var messageQueueString = JSON.stringify(sendMessageQueue);
         sendMessageQueue = [];
         //android can't read directly the return data, so we can reload iframe src to communicate with java
@@ -108,9 +108,8 @@
                 try {
                     handler(message.data, responseCallback);
                 } catch (exception) {
-                    if (typeof console != 'undefined') {
-                       // console.log("WARNING: javascript handler threw.", message, exception);
-                       console.error("WARNING: javascript handler threw.",message, exception);
+                    if (typeof console != 'undefined') {                       
+                       window.NPMobile.logger.error("WARNING: javascript handler threw.",message, exception);
                     }
                 }
             }
@@ -119,7 +118,7 @@
 
     //提供给native调用,receiveMessageQueue 在会在页面加载完后赋值为null,所以
     function _handleMessageFromNative(messageJSON) {
-        console.log(messageJSON);
+        window.NPMobile.logger.log(messageJSON);
         var data = Array.prototype.slice.call(arguments).slice(1);
         if (receiveMessageQueue && receiveMessageQueue.length > 0) {
             receiveMessageQueue.push({ msg: messageJSON, data: data });
