@@ -127,13 +127,16 @@ gulp.task('minifyjs', function() {
         'OpenLayers/Layer/ArcGISCache.js',
         "OpenLayers/Events/featureclick.js",
         'OpenLayers/Strategy/Cluster.js',
-        'OpenLayers/Strategy/AnimatedCluster.js'
+        'OpenLayers/Strategy/AnimatedCluster.js',
+        'OpenLayers/Rule.js',
+        'OpenLayers/Control/Measure.js',
+        'OpenLayers/Control/ScaleLine.js'
     ];
     for (var i = lib.length - 1; i >= 0; i--) {
         lib[i] = 'source/lib/' + lib[i];
     }
 
-    gulp.src('NPMobileMap.js')
+    gulp.src('NPMobileMap.js') //,'measure.js'
         .pipe(concat('NPMobileMap.js'))
         .pipe(rename('NPMobileMap.js'))
        .pipe(uglify())
@@ -158,7 +161,7 @@ gulp.task('watch', function() {
 gulp.task('doc', function(cb) {
     del(['document'], cb);
     var lib = [
-        'NPMobileMap.js'
+        'NPMobileMap.js','measure.js'
     ];
     lib.push('README.md');
     var config = {

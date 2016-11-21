@@ -44,8 +44,18 @@
 
 <body>
     <div>
+        <div style="width:100%;height: 90px;display:none" id="mapConfig">
+            <!--  <input type="button" value="加载地图">
+            <input type="button" value="普通Marker">
+            <input type="button" value="聚合Marker"> -->
+            <input type="button" value="测距">
+            <input type="button" value="面积测量">
+            <br>
+            <textarea cols="150" rows="3"></textarea>
+            <input type="button" value="执行">
+        </div>
         <div id="viewerContainer"></div>
-        <div id="iploc" class="ipLocCont BMap_noprint anchorBR" style="position: absolute; z-index: 10; bottom: 50px; right: 10px; top: auto; left: auto;">
+        <div id="iploc" class="ipLocCont BMap_noprint anchorBR" style="position: absolute; z-index: 10; bottom: 50px; right: 10px; top: auto; left: auto;display:none">
             <div class="titleComm title hide">定位您的位置</div>
             <div class="hide titleComm loading-button">定位中</div>
             <div class="hide titleComm titleFailed">定位失败</div>
@@ -55,7 +65,100 @@
     <script src="jquery.js"></script>
     <script src="OpenLayers.js"></script>
     <script src="NPMobileMap.js"></script>
+    <script src="../measure.js"></script>
+    <script src="WebViewJavascriptBridge.js"></script>
     <script type="text/javascript">
+    function connectWebViewJavascriptBridge(callback) {
+        if (window.WebViewJavascriptBridge) {
+            callback(WebViewJavascriptBridge)
+        } else {
+            document.addEventListener(
+                'WebViewJavascriptBridgeReady',
+                function() {
+                    callback(WebViewJavascriptBridge)
+                },
+                false
+            );
+        }
+    }
+
+    connectWebViewJavascriptBridge(function(bridge) {
+        bridge.registerHandler("NPMobileHelper.callMethod", function(data, responseCallback) {
+            responseCallback(NPMobileHelper.callMethod.apply(NPMobileHelper, data));
+        });
+    });
+    var jsCode = {
+        '加载地图': function() {
+            WebViewJavascriptBridge._handleMessageFromNative('{"callbackId":"JAVA_CB_1_384","handlerName":"NPMobileHelper.callMethod"}', {
+                "className": "NPMobile.Map",
+                "id": "693fa4f2-33f0-4e0b-a331-f9cbab06a47a",
+                "mapConfig": "http://192.168.61.28:807/mobile/dist//mapCONFIG.JSON",
+                "mapContainer": "viewerContainer"
+            }, "donothing");
+        },
+        '普通Marker': function() {
+            WebViewJavascriptBridge._handleMessageFromNative('{"callbackId":"JAVA_CB_1_384","handlerName":"NPMobileHelper.callMethod"}', {
+                "className": "NPMobile.Map",
+                "id": "693fa4f2-33f0-4e0b-a331-f9cbab06a47a",
+                "mapConfig": "http://192.168.61.28:807/mobile/dist//mapCONFIG.JSON",
+                "mapContainer": "viewerContainer"
+            }, 'addLayer', {
+                "className": "NPMobile.Layers.CustomerLayer",
+                "id": "3af23926-0de5-4f23-afc3-cda12fff7449",
+                "name": "测试"
+            });
+
+
+            javascript: WebViewJavascriptBridge._handleMessageFromNative('{"callbackId":"JAVA_CB_2_716","handlerName":"NPMobileHelper.callMethod"}', {
+                "className": "NPMobile.Layers.CustomerLayer",
+                "id": "3af23926-0de5-4f23-afc3-cda12fff7449",
+                "name": "测试"
+            }, 'addOverlay', {
+                "className": "NPMobile.Geometry.Marker",
+                "id": "360b6178-dbc5-4ebd-9bd2-e17fbad332fe",
+                "options": {
+                    "externalGraphic": "img/marker.png",
+                    "fontColor": "white",
+                    "fontSize": "14px",
+                    "graphicHeight": 25.0,
+                    "graphicWidth": 21.0,
+                    "graphicXOffset": -10.5,
+                    "graphicYOffset": -12.5,
+                    "labelAlign": "cm",
+                    "labelXOffset": 0.0,
+                    "labelYOffset": 0.0
+                },
+                "point": {
+                    "className": "NPMobile.Geometry.Point",
+                    "id": "830d07f9-15fd-4ce6-a662-a09f441e00c9",
+                    "lat": 39.871658488633386,
+                    "lon": 116.3129927000627
+                }
+            });
+
+        },
+        '聚合Marker': function() {
+
+        },
+        '测距': function() {
+            tool.setMode(NPMobile.Tool.MeasureMode.DISTANCE, function(area) {
+                console.log(area);
+            });
+        },
+        '面积测量': function() {
+            tool.setMode(NPMobile.Tool.MeasureMode.AREA, function(area) {
+                console.log(area);
+            });
+        }
+    };
+    $("input").click(function(event) {
+        if($(this).val() === '执行'){
+            $("textarea").val() && eval($("textarea").val());
+        }else{
+            jsCode[$(this).val()]();
+        }
+        
+    });
     var map;
     var fixSize = function() {
         window.scrollTo(0, 0);
@@ -70,12 +173,13 @@
     setTimeout(fixSize, 700);
     setTimeout(fixSize, 1500);
     var map = null,
+        tool,
         marker = null;
 
     function createMap() {
         $.getJSON('mapConfig.json', function(json, textStatus) {
             map = new NPMobile.Map(viewerContainer, json);
-
+            tool = new NPMobile.Tool.Measure(map);
             /////////**************** Marker************************************
 
             function createMarker(point, name, f) {

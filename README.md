@@ -104,3 +104,17 @@ clusterLayer.addOverlays(markers);
 
 
 ```
+---
+### 6. 第六章 申明测量工具
+申明测量工具
+```js
+var tool = new NPMobile.Tool.Measure(map);
+// 测距
+tool.setMode(NPMobile.Tool.MeasureMode.DISTANCE,function(distance){
+    console.log(distance);
+});
+// 面积测量 
+tool.setMode(NPMobile.Tool.MeasureMode.AREA,function(area){
+    console.log(area);
+});
+```

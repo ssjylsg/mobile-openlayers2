@@ -742,69 +742,74 @@ NPMobile.Map = function(mapContainer, mapInfo) {
     this._events = [];
     this._selectControl = null;
     this._layers = [];
-    var geolocate = new OpenLayers.Control.Geolocate({
-        "id": "iploc",
-        bind: false,
-        geolocationOptions: {
-            enableHighAccuracy: false,
-            maximumAge: 0,
-            timeout: 7000
-        }
-    });
+    // var geolocate = new OpenLayers.Control.Geolocate({
+    //     "id": "iploc",
+    //     bind: false,
+    //     geolocationOptions: {
+    //         enableHighAccuracy: false,
+    //         maximumAge: 0,
+    //         timeout: 7000
+    //     }
+    // });
     mapInfo.mapOpts.controls = [new OpenLayers.Control.TouchNavigation({
-        dragPanOptions: {
-            enableKinetic: true
-        }
-    }), geolocate, new OpenLayers.Control.Zoom()];
+            dragPanOptions: {
+                enableKinetic: true
+            }
+        }), //geolocate, 
+        new OpenLayers.Control.Zoom(),
+        new OpenLayers.Control.ScaleLine({
+            bottomOutUnits: ''
+        })
+    ];
     mapInfo.mapOpts.centerPoint = mapInfo.mapOpts.centerPoint || mapInfo.vectorLayer[0].layerOpt.centerPoint;
     mapInfo.mapOpts.zoom = mapInfo.mapOpts.defaultZoom || mapInfo.mapOpts.minZoom;
 
     mapInfo.mapOpts.originCenter = mapInfo.mapOpts.centerPoint;
     this._map = new OpenLayers.Map(mapContainer, mapInfo.mapOpts);
 
-    $(".icon").click(function() {
-        console.log('click');
-        if (geolocate.active) {
-            geolocate.getCurrentLocation();
-        } else {
-            geolocate.activate();
-        }
-    });
+    // $(".icon").click(function() {
+    //     console.log('click');
+    //     if (geolocate.active) {
+    //         geolocate.getCurrentLocation();
+    //     } else {
+    //         geolocate.activate();
+    //     }
+    // });
     var that = this;
     var vector = new OpenLayers.Layer.Vector("Vector Layer", {});
     this._map.addLayer(vector);
-    geolocate.events.register("locationfailed", this, function(e) {
-        console.error(e.error.message);
-    });
-    geolocate.events.register("locationupdated", this, function(e) {
-        that.setCenter(e.position, that.getMaxZoom());
-        var point = NPMobile.T.setPoint(that._map, e.position);
-        vector.removeAllFeatures();
-        vector.addFeatures([
-            new OpenLayers.Feature.Vector(
-                new OpenLayers.Geometry.Point(point.lon, point.lat), {}, {
-                    strokeOpacity: 1,
-                    strokeColor: 'rgb(23,146,255)',
-                    fillColor: 'rgb(23,146,255)',
-                    pointRadius: 5
-                }
-            ),
-            new OpenLayers.Feature.Vector(
-                OpenLayers.Geometry.Polygon.createRegularPolygon(
-                    new OpenLayers.Geometry.Point(point.lon, point.lat),
-                    that._map.getUnits() == 'm' ? 15 : 0.0001,
-                    50,
-                    0
-                ), {}, {
-                    fillOpacity: 0.3,
-                    fillColor: 'rgb(23,146,255)',
-                    strokeColor: 'rgb(23,146,255)',
-                    strokeOpacity: 0.3
-                }
-            )
-        ]);
+    // geolocate.events.register("locationfailed", this, function(e) {
+    //     console.error(e.error.message);
+    // });
+    // geolocate.events.register("locationupdated", this, function(e) {
+    //     that.setCenter(e.position, that.getMaxZoom());
+    //     var point = NPMobile.T.setPoint(that._map, e.position);
+    //     vector.removeAllFeatures();
+    //     vector.addFeatures([
+    //         new OpenLayers.Feature.Vector(
+    //             new OpenLayers.Geometry.Point(point.lon, point.lat), {}, {
+    //                 strokeOpacity: 1,
+    //                 strokeColor: 'rgb(23,146,255)',
+    //                 fillColor: 'rgb(23,146,255)',
+    //                 pointRadius: 5
+    //             }
+    //         ),
+    //         new OpenLayers.Feature.Vector(
+    //             OpenLayers.Geometry.Polygon.createRegularPolygon(
+    //                 new OpenLayers.Geometry.Point(point.lon, point.lat),
+    //                 that._map.getUnits() == 'm' ? 15 : 0.0001,
+    //                 50,
+    //                 0
+    //             ), {}, {
+    //                 fillOpacity: 0.3,
+    //                 fillColor: 'rgb(23,146,255)',
+    //                 strokeColor: 'rgb(23,146,255)',
+    //                 strokeOpacity: 0.3
+    //             }
+    //         )
+    //     ]);
 
-    });
+    // });
 
     this._mapJson = {
         map: this._map,
@@ -838,7 +843,23 @@ NPMobile.Map = function(mapContainer, mapInfo) {
     NPMobile.T.map = this._map;
 };
 NPMobile.Map.prototype = {
-    destroy:function(){
+    /**
+     * 计算P0 到P1 的距离
+     * @param  {NPMobile.Geometry.Point} p0  
+     * @param  {NPMobile.Geometry.Point} p1  
+     * @return {number}     
+     */
+    distance: function(p0, p1) {
+        p0 = new OpenLayers.Geometry.Point(p0.lon, p0.lat);
+        p1 = new OpenLayers.Geometry.Point(p1.lon, p1.lat);
+        p0 = p0.transform('EPSG:4326', 'EPSG:900913');
+        p1 = p1.transform('EPSG:4326', 'EPSG:900913');
+        return Number(p0.distanceTo(p1).toFixed(2));
+    },
+    /**
+     * 销毁地图
+     */
+    destroy: function() {
         this._map.destroy();
         window.NPMobileHelper._map = null;
         window.NPMobileHelper._objs = {};
@@ -868,6 +889,10 @@ NPMobile.Map.prototype = {
             this._events["_" + type] = listener;
         }
     },
+    /**
+     * 新增覆盖物
+     * @param {NPMobile.Geometry.Curve} overlayer
+     */
     addOverlay: function(overlayer) {
         this._defaultLayer.addFeatures([overlayer._vector]);
     },
@@ -1555,6 +1580,9 @@ window.NPMobileHelper = {
 
     },
     _createClass: function(obj) {
+        if (obj.id && this._objs[obj.id]) {
+            return this._objs[obj.id];
+        }
         var result = null;
         switch (obj.className) {
             case 'NPMobile.Layers.CustomerLayer':
@@ -1649,5 +1677,3 @@ window.NPMobileHelper = {
         return JSON.stringify(result);
     }
 }
-
-
