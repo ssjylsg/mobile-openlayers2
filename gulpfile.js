@@ -151,7 +151,7 @@ gulp.task('minifyjs', function() {
 });
 gulp.task('watch', function() {
     fs.watchFile('NPMobileMap.js', function() {
-        gulp.src('NPMobileMap.js')
+        gulp.src(['NPMobileMap.js','measure.js'])
             .pipe(concat('NPMobileMap.js'))
             .pipe(rename('NPMobileMap.js'))
             //.pipe(uglify())

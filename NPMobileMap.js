@@ -1,6 +1,6 @@
 window.NPMobile = {
     ISPOINTCONVERT: true,
-    VERSION: '1.0.1',
+    VERSION: '1.0.2',
     inherits: function(childCtor, parentCtor) {
         var p = parentCtor.prototype;
         var c = childCtor.prototype;
@@ -1585,6 +1585,9 @@ window.NPMobileHelper = {
         }
         var result = null;
         switch (obj.className) {
+            case 'NPMobile.Tool.Measure':
+                result = new NPMobile.Tool.Measure(this._objs[obj.map.id]);
+                break;
             case 'NPMobile.Layers.CustomerLayer':
                 result = new NPMobile.Layers.CustomerLayer(obj.name);
                 break;
@@ -1608,18 +1611,18 @@ window.NPMobileHelper = {
                 obj.options.maxZoom = obj.options.maxZoom || window.NPMobileHelper._map.getMaxZoom();
                 obj.options.selectZoom = obj.options.selectZoom || window.NPMobileHelper._map.getMaxZoom();
                 result = new NPMobile.Layers.ClusterLayer(obj.name, obj.options);
-                result.register('getUrl', function(count) {
+                result.register('getUrl', function(count, data) {
                     if (count != '') {
                         return obj.options.clusterImage.url;
                     } else {
-                        return obj.options.singleImage.url;
+                        return data.feature.getData().image.url || obj.options.singleImage.url;
                     }
                 });
-                result.register('getImageSize', function(count) {
+                result.register('getImageSize', function(count, data) {
                     if (count != '') {
                         return obj.options.clusterImage.imageSize;
                     } else {
-                        return obj.options.singleImage.imageSize;
+                        return data.feature.getData().image.imageSize || obj.options.singleImage.imageSize;
                     }
                 });
                 result.register('getContent', function() {
@@ -1673,7 +1676,20 @@ window.NPMobileHelper = {
             });
             return "";
         }
+        // if (args[0] === 'setMode') {
+        //     methodArgs.push(function(f) {
+        //         var data = { id: np.id, eventType: 'callback', args: Array.prototype.slice.call(arguments) };
+        //         window.WebViewJavascriptBridge.callHandler(
+        //             'NPMobileHelper.Event.Call', data,
+        //             function(responseData) {
+
+        //             }
+        //         );
+        //     })
+        //     np[args[0]].apply(np, methodArgs);
+        //     return "";
+        // }
         var result = np[args[0]].apply(np, methodArgs);
         return JSON.stringify(result);
     }
-}
+};
