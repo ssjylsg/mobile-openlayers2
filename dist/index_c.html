@@ -91,18 +91,7 @@
         });
     });
 
-    $("input").click(function(event) {
-        var data = {
-            id: 1,
-            eventType: 'clcik'
-        };
-        window.WebViewJavascriptBridge.callHandler(
-            'NPMobileHelper.Event.Call', data,
-            function(responseData) {
-
-            }
-        );
-    });
+     
     </script>
 </body>
 
