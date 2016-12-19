@@ -375,7 +375,7 @@ OpenLayers.Feature.Vector = OpenLayers.Class(OpenLayers.Feature, {
     },
     getData: function() {
         var f = this;
-        return f.cluster ? (f.cluster.length === 1 ? f.cluster[0].data : f.data) : f.data;
+        return f.cluster ? (f.cluster.length === 1 ? f.cluster[0] : f.data) : f.data;
     },
     CLASS_NAME: "OpenLayers.Feature.Vector"
 });

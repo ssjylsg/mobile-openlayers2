@@ -1,6 +1,6 @@
 window.NPMobile = {
     ISPOINTCONVERT: true,
-    VERSION: '1.0.2',
+    VERSION: '1.0.5',
     inherits: function(childCtor, parentCtor) {
         var p = parentCtor.prototype;
         var c = childCtor.prototype;
@@ -379,7 +379,9 @@ NPMobile.Layers.ClusterLayer = function(name, opts) {
             fontColor: 'white',
             fontSize: ''
         }
-    })
+    });
+    opts.defaultStyle.fontColor = opts.fontColor || opts.defaultStyle.fontColor;
+    opts.defaultStyle.fontSize = opts.fontSize || opts.defaultStyle.fontSize;
 
     var that = this;
     var layerOpts = {
@@ -391,18 +393,18 @@ NPMobile.Layers.ClusterLayer = function(name, opts) {
                 if (f.cluster && f.cluster.length > 1) {
                     return;
                 } else {
-                    if (f.attributes.count > 0 && opts.clusterClickModel === 'zoom') {
-                        if (!opts.selectZoom) {
-                            var px = clusters.map.getPixelFromLonLat({
-                                lon: f.geometry.getCentroid().x,
-                                lat: f.geometry.getCentroid().y
-                            });
-                            clusters.map.zoomTo(clusters.map.getZoom() + 1, px);
-                        } else {
-                            var p = new OpenLayers.LonLat(f.geometry.x, f.geometry.y);
-                            clusters.map.setCenter(p, opts.selectZoom);
-                        }
-                    }
+                    // if (f.attributes.count > 1 && opts.clusterClickModel === 'zoom') {
+                    //     if (!opts.selectZoom) {
+                    //         var px = clusters.map.getPixelFromLonLat({
+                    //             lon: f.geometry.getCentroid().x,
+                    //             lat: f.geometry.getCentroid().y
+                    //         });
+                    //         clusters.map.zoomTo(clusters.map.getZoom() + 1, px);
+                    //     } else {
+                    //         var p = new OpenLayers.LonLat(f.geometry.x, f.geometry.y);
+                    //         clusters.map.setCenter(p, opts.selectZoom);
+                    //     }
+                    // }
                 }
 
                 var clientData;
@@ -410,7 +412,7 @@ NPMobile.Layers.ClusterLayer = function(name, opts) {
                     clientData = f.data;
                 } else {
                     if (f.cluster && f.cluster.length === 1) {
-                        clientData = f.cluster[0].data;
+                        clientData = f.cluster[0];
                     }
                     if (f.cluster && f.cluster.length === 0) {
                         f.data.feature._apiObj = f;
@@ -461,7 +463,7 @@ NPMobile.Layers.ClusterLayer = function(name, opts) {
             getgraphicYOffset: function(f) {
                 var counts = f.getCount();
                 var size = that._trigger('getImageSize', counts, f.getData());
-                return counts === null ? -size.height / 2 : -size.height;
+                return counts == '' ? -size.height / 2 : -size.height;
             },
             getlabelYOffset: function(f) {
                 var counts = f.getCount();
@@ -756,10 +758,10 @@ NPMobile.Map = function(mapContainer, mapInfo) {
                 enableKinetic: true
             }
         }), //geolocate, 
-        new OpenLayers.Control.Zoom(),
-        new OpenLayers.Control.ScaleLine({
-            bottomOutUnits: ''
-        })
+        //new OpenLayers.Control.Zoom(),
+        // new OpenLayers.Control.ScaleLine({
+        //     bottomOutUnits: ''
+        // })
     ];
     mapInfo.mapOpts.centerPoint = mapInfo.mapOpts.centerPoint || mapInfo.vectorLayer[0].layerOpt.centerPoint;
     mapInfo.mapOpts.zoom = mapInfo.mapOpts.defaultZoom || mapInfo.mapOpts.minZoom;
@@ -841,8 +843,83 @@ NPMobile.Map = function(mapContainer, mapInfo) {
     });
 
     NPMobile.T.map = this._map;
+
 };
 NPMobile.Map.prototype = {
+    maxWidth: 100,
+    topOutUnits: "km",
+    topInUnits: "m",
+    bottomOutUnits: "mi",
+    /**
+     * 注册自绘ScaleLine 回调
+     * @param  {function} scalineCallback 回调函数    
+     */
+    registerScaleLine: function(scalineCallback) {
+        this._map.events.register('moveend', this, this.update);
+        this.scalineCallback = scalineCallback;
+    },
+    getBarLen: function(maxLen) {
+        // nearest power of 10 lower than maxLen
+        var digits = parseInt(Math.log(maxLen) / Math.log(10));
+        var pow10 = Math.pow(10, digits);
+
+        // ok, find first character
+        var firstChar = parseInt(maxLen / pow10);
+
+        // right, put it into the correct bracket
+        var barLen;
+        if (firstChar > 5) {
+            barLen = 5;
+        } else if (firstChar > 2) {
+            barLen = 2;
+        } else {
+            barLen = 1;
+        }
+
+        // scale it up the correct power of 10
+        return barLen * pow10;
+    },
+    update: function() {
+        var res = this._map.getResolution();
+        if (!res) {
+            return;
+        }
+        var maxWidth = 100;
+        var curMapUnits = this._map.getUnits();
+        var inches = OpenLayers.INCHES_PER_UNIT;
+        var maxSizeData = maxWidth * res * inches[curMapUnits];
+        var geodesicRatio = 1;
+
+        var topUnits;
+        var bottomUnits;
+        if (maxSizeData > 100000) {
+            topUnits = this.topOutUnits;
+            bottomUnits = this.bottomOutUnits;
+        } else {
+            topUnits = this.topInUnits;
+            bottomUnits = this.bottomInUnits;
+        }
+
+
+        var topMax = maxSizeData / inches[topUnits];
+        var bottomMax = maxSizeData / inches[bottomUnits];
+        var topRounded = this.getBarLen(topMax);
+        var bottomRounded = this.getBarLen(bottomMax);
+        topMax = topRounded / inches[curMapUnits] * inches[topUnits];
+        bottomMax = bottomRounded / inches[curMapUnits] * inches[bottomUnits];
+
+
+        var topPx = topMax / res / geodesicRatio;
+        var bottomPx = bottomMax / res / geodesicRatio;
+        var result = {
+            width: Math.round(topPx) + "px",
+            content: topRounded + " " + topUnits
+        };
+        if (this.scalineCallback) {
+            this.scalineCallback(result);
+        }
+        //console.log(result);
+    },
     /**
      * 计算P0 到P1 的距离
      * @param  {NPMobile.Geometry.Point} p0  
@@ -1158,6 +1235,15 @@ NPMobile.Map.prototype = {
     getCenter: function() {
         var c = this._map.getCenter();
         return NPMobile.T.getPoint(this._map, c);
+    },
+    /**
+     * 平移地图
+     * @param {NPMobile.Geometry.Point} point  
+     * @param {number} zoom
+     */
+    panTo: function(point) {
+        var tempPoint = NPMobile.T.setPoint(this._map, point);
+        this._map.panTo(new OpenLayers.LonLat(tempPoint.lon, tempPoint.lat));
     },
     /**
      * 设置地图中心点
@@ -1605,6 +1691,16 @@ window.NPMobileHelper = {
                     });
                 }
                 result = new NPMobile.Map(obj.mapContainer || 'viewerContainer', obj.mapConfig);
+                result.registerScaleLine(function(scale) {
+                    scale.id = obj.id;
+                    scale.eventType = "ScaleLine";                    
+                    window.WebViewJavascriptBridge.callHandler(
+                        'NPMobileHelper.ScaleLine', scale,
+                        function(responseData) {
+                            
+                        }
+                    );
+                })
                 window.NPMobileHelper._map = result;
                 break;
             case "NPMobile.Layers.ClusterLayer":
@@ -1615,14 +1711,14 @@ window.NPMobileHelper = {
                     if (count != '') {
                         return obj.options.clusterImage.url;
                     } else {
-                        return data.feature.getData().image.url || obj.options.singleImage.url;
+                        return data.getData().image.url || obj.options.singleImage.url;
                     }
                 });
                 result.register('getImageSize', function(count, data) {
                     if (count != '') {
                         return obj.options.clusterImage.imageSize;
                     } else {
-                        return data.feature.getData().image.imageSize || obj.options.singleImage.imageSize;
+                        return data.getData().image.imageSize || obj.options.singleImage.imageSize;
                     }
                 });
                 result.register('getContent', function() {

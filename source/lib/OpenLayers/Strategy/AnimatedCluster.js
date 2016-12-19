@@ -134,21 +134,21 @@ OpenLayers.Strategy.AnimatedCluster = OpenLayers.Class(OpenLayers.Strategy.Clust
             var middle = Math.ceil((low + high) / 2);
             var index0;
             var index1;
-            if (x == 'x') {
+            if (x === 'x') {
                 index0 = srcArray[middle].geometry.x;
             } else {
                 index0 = srcArray[middle].geometry.y;
             }
             if (index0 < xmin) {
                 low = low + 1;
-                if (isDrection != 0 && isDrection != 1) {
+                if (isDrection !== 0 && isDrection !== 1) {
                     return middle;
                 } else {
                     isDrection = 1;
                 }
             } else if (index0 > xmin) {
                 high = high - 1;
-                if (isDrection != 0 && isDrection != -1) {
+                if (isDrection !== 0 && isDrection != -1) {
                     return middle;
                 } else {
                     isDrection = -1;
@@ -175,18 +175,18 @@ OpenLayers.Strategy.AnimatedCluster = OpenLayers.Class(OpenLayers.Strategy.Clust
     cluster: function(event) {
 
         var resolution = this.layer.map.getResolution();
-        var isPan = (event && event.type == "moveend" && !event.zoomChanged);
+        var isPan = (event && event.type === "moveend" && !event.zoomChanged);
 
         // Each time clusters are animated we need to call layer.redraw to show
         // position changes. This produces layer will be redrawn and a call to 
         // cluster is made.
         // Because this, ff we are animating clusters and zoom didn't changed, simply return.
-        if (this.animating && (resolution == this.resolution)) {
+        if (this.animating && (resolution === this.resolution)) {
             return;
         }
         var isZoomChanged = false;
-        if (event && event.type == "moveend" && event.zoomChanged) {
-            if (this.currentZoom != this.layer.map.getZoom()) {
+        if (event && event.type === "moveend" && event.zoomChanged) {
+            if (this.currentZoom !== this.layer.map.getZoom()) {
                 this.oldClusters = [];
                 if (this.features == null) {
                     return;
@@ -202,24 +202,6 @@ OpenLayers.Strategy.AnimatedCluster = OpenLayers.Class(OpenLayers.Strategy.Clust
                 this.layer.removeAllFeatures();
             }
         }
-        //优化要显示的要素，将不显示的要素重地图中清除，避免拖拽过久而导致的要素太多影像地图性能问题
-        var nowExent = this.layer.map.getExtent(),
-            delFeatures = [];
-        for (var i = 0, length = this.layer.features.length; i < length; i++) {
-            if (!this.layer.features[i].cluster) {
-                var point = this.layer.features[i].geometry;
-                var isContain = nowExent.contains(point.x, point.y, true);
-                if (!isContain) {
-                    this.layer.features[i]._status = false;
-                    this.layer.features[i].style = null;
-                    delFeatures.push(this.layer.features[i]);
-                }
-            }
-        }
-        this.layer.removeFeatures(delFeatures);
-
-
-        this.currentZoom = this.layer.map.getZoom();
         if (this.layer.map.getZoom() < this.minZoom) {
             window.clearTimeout(this.timer);
             this.layer.removeAllFeatures();
@@ -239,6 +221,58 @@ OpenLayers.Strategy.AnimatedCluster = OpenLayers.Class(OpenLayers.Strategy.Clust
             }
             return;
         }
+        //优化要显示的要素，将不显示的要素重地图中清除，避免拖拽过久而导致的要素太多影像地图性能问题
+        var nowExent = this.layer.map.getExtent(),
+            delFeatures = [];
+        for (var i = 0, length = this.layer.features.length; i < length; i++) {
+            if (!this.layer.features[i].cluster) {
+                var point = this.layer.features[i].geometry;
+                var isContain = nowExent.contains(point.x, point.y, true);
+                if (!isContain) {
+                    this.layer.features[i]._status = false;
+                    this.layer.features[i].data._status = false;
+                    this.layer.features[i].style = null;
+                    delFeatures.push(this.layer.features[i]);
+                }
+            }else{
+                for (var j = 0; j < this.layer.features[i].cluster.length; j++) {
+                    var point = this.layer.features[i].cluster[j].geometry;
+                    if(!nowExent.contains(point.x, point.y, true)){
+                         delFeatures.push(this.layer.features[i]);
+                         for (var k = 0; k < this.layer.features[i].cluster.length; k++){
+                            this.layer.features[i].cluster[k]._status = false;
+                         }
+                         break;
+                    }
+                }
+            }
+        }
+        this.layer.removeFeatures(delFeatures);
+
+
+        var drawClusters = [];
+        for (var i = 0; i < this.oldClusters.length; i++) {
+            var point = this.oldClusters[i].geometry;
+            if(nowExent.contains(point)){
+                var c = this.oldClusters[i];
+                var cs = [];
+                for (var j = 0; j < this.oldClusters[i].cluster.length; j++) {
+                    var p = this.oldClusters[i].cluster[j].geometry;
+                    if(nowExent.contains(p)){
+                        this.oldClusters[i].cluster[j]._status = true;
+                        cs.push(this.oldClusters[i].cluster[j]);
+                    }else{
+                        this.oldClusters[i].cluster[j]._status = false;
+                    }
+                }
+                this.oldClusters[i].cluster = cs;
+                this.oldClusters[i].attributes.count = cs.length;
+                drawClusters.push(this.oldClusters[i]);
+            }
+        }
+        this.oldClusters = drawClusters;
+
+        this.currentZoom = this.layer.map.getZoom();
         if (!this._xData || this._xData.length <= 0) {
             return;
         }
@@ -278,8 +312,8 @@ OpenLayers.Strategy.AnimatedCluster = OpenLayers.Class(OpenLayers.Strategy.Clust
                 }
             }
 
-            if (resolution != this.resolution || !this.clustersExist() || isPan) {
-                if (resolution != this.resolution) {
+            if (resolution !== this.resolution || !this.clustersExist() || isPan) {
+                if (resolution !== this.resolution) {
                     this.zoomIn = (!this.resolution || (resolution <= this.resolution));
                 }
 
@@ -335,13 +369,15 @@ OpenLayers.Strategy.AnimatedCluster = OpenLayers.Class(OpenLayers.Strategy.Clust
                         if (feature.cluster) {
                             Array.prototype.push.apply(clusters, feature.cluster);
                         } else {
-                            // var f = new OpenLayers.Feature.Vector(
-                            //     new OpenLayers.Geometry.Point(feature.geometry.x, feature.geometry.y), {
-                            //         count: 0,
-                            //         markType: feature.markType
-                            //     }
-                            // );
-                            var f = this.createCluster(feature);
+                            var f = new OpenLayers.Feature.Vector(
+                                new OpenLayers.Geometry.Point(feature.geometry.x, feature.geometry.y), {
+                                    count: 0,
+                                    markType: feature.markType
+                                }
+                            );
+                            f.data = feature;
+                            feature._apiObj = f;
+                            //var f = this.createCluster(feature);
                             clusters.push(f);
                         }
                     }
@@ -349,7 +385,7 @@ OpenLayers.Strategy.AnimatedCluster = OpenLayers.Class(OpenLayers.Strategy.Clust
 
                 this.clusters = clusters;
                 if (this.layer.map.getZoom() < this.maxZoom) {
-                    if (this.oldClusters.length == 0) {
+                    if (this.oldClusters.length === 0) {
                         for (var i = 0; i < this.clusters.length; i++) {
                             this.oldClusters.push(this.clusters[i]);
                         }
@@ -379,13 +415,9 @@ OpenLayers.Strategy.AnimatedCluster = OpenLayers.Class(OpenLayers.Strategy.Clust
                             }
                             if (!status) {
                                 toCs.push(toC);
-                                this.layer.removeFeatures([this.oldClusters[toC]], {
-                                    silent: true
-                                });
-                                this.oldClusters[toC].style = null;
-                                if (this.oldClusters[toC].cluster.length == 1) {
-                                    this.layer.removeFeatures(this.oldClusters[toC].cluster);
-                                    this.oldClusters[toC].cluster[0].style = null;
+                                if (this.oldClusters[toC].cluster.length === 1) {
+                                    this.layer.removeFeatures(this.oldClusters[toC].cluster[0]._apiObj);
+                                    this.oldClusters[toC].cluster[0]._apiObj.style = null;
                                 }
                             }
                             this.oldClusters[toC].cluster.push(newClusterFeatures[j]);
@@ -403,25 +435,37 @@ OpenLayers.Strategy.AnimatedCluster = OpenLayers.Class(OpenLayers.Strategy.Clust
                             this.clusters.push(this.oldClusters[index]);
                         }
                     }
-                    var clone = this.clusters.slice();
-                    this.clusters = [];
+
+                    //var clone = this.clusters.slice();
+                    //this.clusters = [];
+                    var clone = [];
                     var candidate;
-                    for (var i = 0, len = clone.length; i < len; ++i) {
-                        candidate = clone[i];
+                    for (var i = 0, len = this.oldClusters.length; i < len; ++i) {
+                        candidate = this.oldClusters[i];
                         if (candidate.attributes.count < this.threshold) {
                             for (var k = candidate.cluster.length - 1; k >= 0; k--) {
-                                var candidateCluster = this.createCluster(candidate.cluster[k]);
-                                // = new OpenLayers.Feature.Vector(
-                                //     new OpenLayers.Geometry.Point(candidate.cluster[k].geometry.x, candidate.cluster[k].geometry.y), {
-                                //         count: 0,
-                                //         markType: candidate.cluster[k].markType
-                                //     }
-                                // );
-                                this.clusters.push(candidateCluster);
+                                //var candidateCluster = this.createCluster(candidate.cluster[k]);
+                                var candidateCluster = new OpenLayers.Feature.Vector(
+                                    new OpenLayers.Geometry.Point(candidate.cluster[k].geometry.x, candidate.cluster[k].geometry.y), {
+                                        count: 1,
+                                        markType: candidate.cluster[k].markType
+                                    }
+                                );
+                                candidateCluster.cluster=[],candidateCluster.cluster.push(candidate.cluster[k]);
+                                candidateCluster.data = candidate.cluster[k];
+                                candidate.cluster[k]._apiObj = candidateCluster;
+                                clone.push(candidateCluster);
                             }
                             // Array.prototype.push.apply(this.clusters, candidate.cluster);
                         } else {
-                            this.clusters.push(candidate);
+                            clone.push(candidate);
+                        }
+                    }
+                    this.oldClusters = clone;
+                    this.clusters = [];
+                    for (var i = 0; i < this.oldClusters.length; i++) {
+                        if(!this.oldClusters[i].layer){
+                            this.clusters.push(this.oldClusters[i]);
                         }
                     }
 
@@ -459,7 +503,7 @@ OpenLayers.Strategy.AnimatedCluster = OpenLayers.Class(OpenLayers.Strategy.Clust
                         this.callbackFun = null;
                     }
                 } else {
-                    this.index = 0;
+                    this.index = 0; 
                     this.timer = window.setTimeout(this.startAddFeatures.bind(this), 15);
                 }
                 this.clustering = false;
@@ -472,16 +516,31 @@ OpenLayers.Strategy.AnimatedCluster = OpenLayers.Class(OpenLayers.Strategy.Clust
             if (clusterArrary[j].cluster && clusterArrary[j].cluster.length > 0) {
                 var sumX = 0;
                 var sumY = 0;
-                // for (var i = 0; i < clusterArrary[j].cluster.length; i++) {
-                //     sumX += clusterArrary[j].cluster[i].geometry.x;
-                //     sumY += clusterArrary[j].cluster[i].geometry.y;
-                // }
-                var i = Math.floor(clusterArrary[j].cluster.length / 2);
-                sumX = clusterArrary[j].cluster[i].geometry.x;
-                sumY = clusterArrary[j].cluster[i].geometry.y;
-                var length = 1; //clusterArrary[j].cluster.length;
-                clusterArrary[j].geometry.x = sumX / length;
-                clusterArrary[j].geometry.y = sumY / length;
+                for (var i = 0; i < clusterArrary[j].cluster.length; i++) {
+                    sumX += clusterArrary[j].cluster[i].geometry.x;
+                    sumY += clusterArrary[j].cluster[i].geometry.y;
+                }
+                // var i = Math.floor(clusterArrary[j].cluster.length / 2);
+                // sumX = clusterArrary[j].cluster[i].geometry.x;
+                // sumY = clusterArrary[j].cluster[i].geometry.y;
+                // var length = 1; 
+                var length = clusterArrary[j].cluster.length;
+                var x = sumX / length;
+                var y = sumY / length;
+                var d = 999999999999;
+                var geometry = null;
+                for (var i = 0; i < clusterArrary[j].cluster.length; i++) {
+                    var cluster = clusterArrary[j].cluster[i];
+                    var temp = (x - cluster.geometry.x) * (x - cluster.geometry.x) + (y - cluster.geometry.y) * (y - cluster.geometry.y);
+                    if (temp < d) {
+                        d = temp;
+                        geometry = cluster.geometry;
+                    }
+                }
+                clusterArrary[j].geometry.x = geometry.x;
+                clusterArrary[j].geometry.y = geometry.y;
+                // clusterArrary[j].geometry.x = sumX / length;
+                // clusterArrary[j].geometry.y = sumY / length;
             }
         }
     },
@@ -503,7 +562,7 @@ OpenLayers.Strategy.AnimatedCluster = OpenLayers.Class(OpenLayers.Strategy.Clust
         var c = -1;
         var d = 999999999999;
         for (var i = 0; i < means.length; i++) {
-            if (t.markType != means[i].data.markType) {
+            if (t.markType !== means[i].data.markType) {
                 continue;
             }
             var temp = (t.geometry.x - means[i].geometry.x) * (t.geometry.x - means[i].geometry.x) + (t.geometry.y - means[i].geometry.y) * (t.geometry.y - means[i].geometry.y);
@@ -526,7 +585,7 @@ OpenLayers.Strategy.AnimatedCluster = OpenLayers.Class(OpenLayers.Strategy.Clust
                         drawData.cluster[i]._status = true;
                     }
                 } else {
-                    drawData._status = true;
+                    drawData.data._status = true;
                 }
             }
             this.index++;
@@ -583,7 +642,7 @@ OpenLayers.Strategy.AnimatedCluster = OpenLayers.Class(OpenLayers.Strategy.Clust
                 if (cluster.attributes.count) {
                     var clusterFeatures = clusters[j].cluster;
                     for (var k = 0; k < clusterFeatures.length; k++) {
-                        if (feature.id == clusterFeatures[k].id) {
+                        if (feature.id === clusterFeatures[k].id) {
                             return cluster;
                         }
                     }
@@ -630,7 +689,7 @@ OpenLayers.Strategy.AnimatedCluster = OpenLayers.Class(OpenLayers.Strategy.Clust
     shouldCluster: function(cluster, feature, previousResolution) {
         var clusterData = cluster.data.markType;
         var featureData = feature.markType;
-        if (clusterData != featureData) {
+        if (clusterData !== featureData) {
             return false;
         }
         var res = previousResolution ? this.previousResolution : this.resolution;
@@ -695,41 +754,57 @@ OpenLayers.Strategy.AnimatedCluster = OpenLayers.Class(OpenLayers.Strategy.Clust
     },
     addClusterMarker: function(markers) {
         window.clearTimeout(this.timer);
+        if (this.layer.map.getZoom() < this.minZoom) {
+            return;
+        }
         var isZoom = this.maxZoom && this.layer.map.getZoom() >= this.maxZoom;
         var clusters = [];
         var clustered = false;
         var cluster = null;
         for (var i = 0; i < markers.length; i++) {
-            var feature = markers[i]._apiObj;
-            this._clusterDataStatus.push(feature);
+            // var feature = markers[i]._apiObj;
+            // this._clusterDataStatus.push(feature);
+            var geo = markers[i].geometry;
             if (this.layer && this.layer.map) {
                 var screenBounds = this.layer.map.getExtent();
-                var featureBounds = feature.geometry.getBounds();
-                if (!screenBounds.intersectsBounds(featureBounds)) {
+                if (!screenBounds.contains(geo.x, geo.y, true)) {
                     continue;
                 }
+                // if (!screenBounds.intersectsBounds(featureBounds)) {
+                //     continue;
+                // }
             }
-            feature._status = true;
-            if (!isZoom && feature.geometry) {
+            markers[i]._status = true;
+            if (!isZoom && markers[i].geometry) {
                 // Cluster for the current resolution
                 clustered = false;
                 for (var j = clusters.length - 1; j >= 0; --j) {
                     cluster = clusters[j];
-                    if (this.shouldCluster(cluster, feature)) {
-                        this.addToCluster(cluster, feature);
+                    if (this.shouldCluster(cluster, markers[i])) {
+                        //this.addToCluster(cluster, markers[i]);
+                        cluster.attributes.count++;
+                        cluster.cluster.push(markers[i]);
                         clustered = true;
                         break;
                     }
                 }
                 if (!clustered) {
-                    clusters.push(this.createNewCluster(feature));
+                    clusters.push(this.createCluster(markers[i]));
                 }
             } else {
-                if (feature.cluster) {
-                    Array.prototype.push.apply(clusters, feature.cluster);
-                } else {
-                    clusters.push(feature);
-                }
+                var feature = new OpenLayers.Feature.Vector(
+                    new OpenLayers.Geometry.Point(geo.x, geo.y), {
+                        count: 1,
+                        markType: markers[i].markType
+                    }
+                );
+                feature.data = markers[i];
+                markers[i]._apiObj = feature;
+                // if (feature.cluster) {
+                //     Array.prototype.push.apply(clusters, feature.cluster);
+                // } else {
+                clusters.push(feature);
+                // }
             }
         }
         this.getMeansC(clusters);
@@ -738,8 +813,20 @@ OpenLayers.Strategy.AnimatedCluster = OpenLayers.Class(OpenLayers.Strategy.Clust
         var candidate;
         for (var i = 0, len = clone.length; i < len; ++i) {
             candidate = clone[i];
-            if (candidate.attributes.count < this.threshold) {
-                Array.prototype.push.apply(clusters, candidate.cluster);
+            if (candidate.attributes.count < this.threshold && candidate.cluster) {
+                for (var m = 0; m < candidate.cluster.length; m++) {
+                    var g = candidate.cluster[m].geometry;
+                    var f = new OpenLayers.Feature.Vector(
+                        new OpenLayers.Geometry.Point(g.x, g.y), {
+                            count: 1,
+                            markType: markers[i].markType
+                        }
+                    );
+                    f.data = candidate.cluster[m];
+                    candidate.cluster[m]._apiObj = f;
+                    clusters.push(f);
+                }
+                //Array.prototype.push.apply(clusters, candidate.cluster);
             } else {
                 clusters.push(candidate);
             }

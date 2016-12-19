@@ -136,17 +136,17 @@ gulp.task('minifyjs', function() {
         lib[i] = 'source/lib/' + lib[i];
     }
 
-    gulp.src('NPMobileMap.js') //,'measure.js'
+    gulp.src(['NPMobileMap.js','measure.js']) //,'measure.js'
         .pipe(concat('NPMobileMap.js'))
         .pipe(rename('NPMobileMap.js'))
-       .pipe(uglify())
+        .pipe(uglify())
         .pipe(gulp.dest('./dist/'));
 
 
     return gulp.src(lib)
         .pipe(concat('OpenLayers.js'))
         .pipe(rename('OpenLayers.js'))
-          .pipe(uglify())
+         .pipe(uglify())
         .pipe(gulp.dest('./dist/'));
 });
 gulp.task('watch', function() {
