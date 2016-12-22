@@ -366,6 +366,9 @@ OpenLayers.Feature.Vector = OpenLayers.Class(OpenLayers.Feature, {
     },
     getCount: function() {
         var f = this;
+        if (f.attributes.isStatistics) {
+            return f.attributes.count;
+        }
         var count = f.attributes.count ? (f.attributes.count === 1 ? '' : f.attributes.count) : '';
         if (count != '') {
             return count > 20 ? "20+" : count + "";
@@ -375,6 +378,9 @@ OpenLayers.Feature.Vector = OpenLayers.Class(OpenLayers.Feature, {
     },
     getData: function() {
         var f = this;
+        if (f.attributes.isStatistics) {
+            return f.data;
+        }
         return f.cluster ? (f.cluster.length === 1 ? f.cluster[0] : f.data) : f.data;
     },
     CLASS_NAME: "OpenLayers.Feature.Vector"

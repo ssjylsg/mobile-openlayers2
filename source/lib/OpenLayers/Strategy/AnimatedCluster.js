@@ -202,7 +202,7 @@ OpenLayers.Strategy.AnimatedCluster = OpenLayers.Class(OpenLayers.Strategy.Clust
                 this.layer.removeAllFeatures();
             }
         }
-        if (this.layer.map.getZoom() < this.minZoom) {
+        if (this.layer.map.getZoom() < this.minZoom && this.statistics && this.statistics.length > 0) {
             window.clearTimeout(this.timer);
             this.layer.removeAllFeatures();
             for (var i = 0; i < this.statistics.length; i++) {
@@ -234,15 +234,19 @@ OpenLayers.Strategy.AnimatedCluster = OpenLayers.Class(OpenLayers.Strategy.Clust
                     this.layer.features[i].style = null;
                     delFeatures.push(this.layer.features[i]);
                 }
-            }else{
+            } else {
+                var isMove = true;
                 for (var j = 0; j < this.layer.features[i].cluster.length; j++) {
                     var point = this.layer.features[i].cluster[j].geometry;
-                    if(!nowExent.contains(point.x, point.y, true)){
-                         delFeatures.push(this.layer.features[i]);
-                         for (var k = 0; k < this.layer.features[i].cluster.length; k++){
-                            this.layer.features[i].cluster[k]._status = false;
-                         }
-                         break;
+                    if (nowExent.contains(point.x, point.y, true)) {
+                        isMove = false;
+                        break;
+                    }
+                }
+                if (isMove) {
+                    delFeatures.push(this.layer.features[i]);
+                    for (var k = 0; k < this.layer.features[i].cluster.length; k++) {
+                        this.layer.features[i].cluster[k]._status = false;
                     }
                 }
             }
@@ -250,27 +254,27 @@ OpenLayers.Strategy.AnimatedCluster = OpenLayers.Class(OpenLayers.Strategy.Clust
         this.layer.removeFeatures(delFeatures);
 
 
-        var drawClusters = [];
-        for (var i = 0; i < this.oldClusters.length; i++) {
-            var point = this.oldClusters[i].geometry;
-            if(nowExent.contains(point)){
-                var c = this.oldClusters[i];
-                var cs = [];
-                for (var j = 0; j < this.oldClusters[i].cluster.length; j++) {
-                    var p = this.oldClusters[i].cluster[j].geometry;
-                    if(nowExent.contains(p)){
-                        this.oldClusters[i].cluster[j]._status = true;
-                        cs.push(this.oldClusters[i].cluster[j]);
-                    }else{
-                        this.oldClusters[i].cluster[j]._status = false;
-                    }
-                }
-                this.oldClusters[i].cluster = cs;
-                this.oldClusters[i].attributes.count = cs.length;
-                drawClusters.push(this.oldClusters[i]);
-            }
-        }
-        this.oldClusters = drawClusters;
+        // var drawClusters = [];
+        // for (var i = 0; i < this.oldClusters.length; i++) {
+        //     var point = this.oldClusters[i].geometry;
+        //     if(nowExent.contains(point)){
+        //         var c = this.oldClusters[i];
+        //         var cs = [];
+        //         for (var j = 0; j < this.oldClusters[i].cluster.length; j++) {
+        //             var p = this.oldClusters[i].cluster[j].geometry;
+        //             if(nowExent.contains(p)){
+        //                 this.oldClusters[i].cluster[j]._status = true;
+        //                 cs.push(this.oldClusters[i].cluster[j]);
+        //             }else{
+        //                 this.oldClusters[i].cluster[j]._status = false;
+        //             }
+        //         }
+        //         this.oldClusters[i].cluster = cs;
+        //         this.oldClusters[i].attributes.count = cs.length;
+        //         drawClusters.push(this.oldClusters[i]);
+        //     }
+        // }
+        // this.oldClusters = drawClusters;
 
         this.currentZoom = this.layer.map.getZoom();
         if (!this._xData || this._xData.length <= 0) {
@@ -346,23 +350,23 @@ OpenLayers.Strategy.AnimatedCluster = OpenLayers.Class(OpenLayers.Strategy.Clust
                     newclustered = false;
                     newClusterFeatures.push(feature);
                     if (!isZoom && feature.geometry) {
-                        for (var j = this.oldClusters.length - 1; j >= 0; --j) {
-                            cluster = this.oldClusters[j];
+                        // for (var j = this.oldClusters.length - 1; j >= 0; --j) {
+                        //     cluster = this.oldClusters[j];
+                        //     if (this.shouldCluster(cluster, feature)) {
+                        //         oldclustered = true;
+                        //         break;
+                        //     }
+                        // }
+                        // if (!oldclustered) {
+                        for (var j = clusters.length - 1; j >= 0; --j) {
+                            cluster = clusters[j];
                             if (this.shouldCluster(cluster, feature)) {
-                                oldclustered = true;
+                                newclustered = true;
                                 break;
                             }
                         }
-                        if (!oldclustered) {
-                            for (var j = clusters.length - 1; j >= 0; --j) {
-                                cluster = clusters[j];
-                                if (this.shouldCluster(cluster, feature)) {
-                                    newclustered = true;
-                                    break;
-                                }
-                            }
-                        }
-                        if (!oldclustered && !newclustered) {
+                        // }
+                        if (!newclustered) { //if (!oldclustered && !newclustered) {
                             clusters.push(this.createCluster(this._clusterDataStatus[i]));
                         }
                     } else {
@@ -397,13 +401,14 @@ OpenLayers.Strategy.AnimatedCluster = OpenLayers.Class(OpenLayers.Strategy.Clust
                             }
                         }
                     } else {
-                        for (var i = 0; i < this.clusters.length; i++) {
-                            this.oldClusters.push(this.clusters[i]);
-                        }
+                        // for (var i = 0; i < this.clusters.length; i++) {
+                        //     this.oldClusters.push(this.clusters[i]);
+                        // }
                         var toCs = [];
                         for (var j = 0; j < newClusterFeatures.length; j++) {
                             var status = false;
-                            var toC = this.searchMinC(newClusterFeatures[j], this.oldClusters);
+                            //var toC = this.searchMinC(newClusterFeatures[j], this.oldClusters);
+                            var toC = this.searchMinC(newClusterFeatures[j], this.clusters);
                             if (toC < 0) {
                                 continue;
                             }
@@ -413,35 +418,46 @@ OpenLayers.Strategy.AnimatedCluster = OpenLayers.Class(OpenLayers.Strategy.Clust
                                     break;
                                 }
                             }
-                            if (!status) {
-                                toCs.push(toC);
-                                if (this.oldClusters[toC].cluster.length === 1) {
-                                    this.layer.removeFeatures(this.oldClusters[toC].cluster[0]._apiObj);
-                                    this.oldClusters[toC].cluster[0]._apiObj.style = null;
-                                }
-                            }
-                            this.oldClusters[toC].cluster.push(newClusterFeatures[j]);
-                            this.oldClusters[toC].attributes.count++;
+                            // if (!status) {
+                            //     toCs.push(toC);
+                            //     if (this.oldClusters[toC].cluster.length === 1) {
+                            //         this.layer.removeFeatures(this.oldClusters[toC].cluster[0]._apiObj);
+                            //         this.oldClusters[toC].cluster[0]._apiObj.style = null;
+                            //     }
+                            // }
+                            // this.oldClusters[toC].cluster.push(newClusterFeatures[j]);
+                            // this.oldClusters[toC].attributes.count++;
+
+                            // if (!status) {
+                            //     toCs.push(toC);
+                            //     if (this.oldClusters[toC].cluster.length === 1) {
+                            //         this.layer.removeFeatures(this.oldClusters[toC].cluster[0]._apiObj);
+                            //         this.oldClusters[toC].cluster[0]._apiObj && (this.oldClusters[toC].cluster[0]._apiObj.style = null);
+                            //     }
+                            // }
+                            this.clusters[toC].cluster.push(newClusterFeatures[j]);
+                            this.clusters[toC].attributes.count++;
                         }
-                        this.clusters = [];
-                        for (var i = 0; i < toCs.length; i++) {
-                            var index = toCs[i];
-                            if (this.oldClusters[index].layer) {
-                                this.layer.removeFeatures([this.oldClusters[index]], {
-                                    silent: true
-                                });
-                                this.oldClusters[index].style = null;
-                            }
-                            this.clusters.push(this.oldClusters[index]);
-                        }
+                        // this.clusters = [];
+                        // for (var i = 0; i < toCs.length; i++) {
+                        //     var index = toCs[i];
+                        //     if (this.oldClusters[index].layer) {
+                        //         this.layer.removeFeatures([this.oldClusters[index]], {
+                        //             silent: true
+                        //         });
+                        //         this.oldClusters[index].style = null;
+                        //     }
+                        //     this.clusters.push(this.oldClusters[index]);
+                        // }
                     }
 
-                    //var clone = this.clusters.slice();
-                    //this.clusters = [];
+
+                    // var clone = this.clusters.slice();
+                    // this.clusters = [];
                     var clone = [];
                     var candidate;
-                    for (var i = 0, len = this.oldClusters.length; i < len; ++i) {
-                        candidate = this.oldClusters[i];
+                    for (var i = 0, len = this.clusters.length; i < len; ++i) {
+                        candidate = this.clusters[i];
                         if (candidate.attributes.count < this.threshold) {
                             for (var k = candidate.cluster.length - 1; k >= 0; k--) {
                                 //var candidateCluster = this.createCluster(candidate.cluster[k]);
@@ -461,13 +477,13 @@ OpenLayers.Strategy.AnimatedCluster = OpenLayers.Class(OpenLayers.Strategy.Clust
                             clone.push(candidate);
                         }
                     }
-                    this.oldClusters = clone;
-                    this.clusters = [];
-                    for (var i = 0; i < this.oldClusters.length; i++) {
-                        if(!this.oldClusters[i].layer){
-                            this.clusters.push(this.oldClusters[i]);
-                        }
-                    }
+                    this.clusters = clone;
+                    // this.clusters = [];
+                    // for (var i = 0; i < this.oldClusters.length; i++) {
+                    //     if(!this.oldClusters[i].layer){
+                    //         this.clusters.push(this.oldClusters[i]);
+                    //     }
+                    // }
 
                     if (isZoomChanged || !event) { // 地图第一次加载时event 为undefine
                         var total = 0;
@@ -503,7 +519,7 @@ OpenLayers.Strategy.AnimatedCluster = OpenLayers.Class(OpenLayers.Strategy.Clust
                         this.callbackFun = null;
                     }
                 } else {
-                    this.index = 0; 
+                    this.index = 0;
                     this.timer = window.setTimeout(this.startAddFeatures.bind(this), 15);
                 }
                 this.clustering = false;
