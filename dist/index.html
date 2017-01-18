@@ -152,12 +152,12 @@
         }
     };
     $("input").click(function(event) {
-        if($(this).val() === '执行'){
+        if ($(this).val() === '执行') {
             $("textarea").val() && eval($("textarea").val());
-        }else{
+        } else {
             jsCode[$(this).val()]();
         }
-        
+
     });
     var map;
     var fixSize = function() {
@@ -208,14 +208,21 @@
 
 
             /////////**************** 聚合************************************
-
-            var clusterLayer = new NPMobile.Layers.ClusterLayer('聚合', {
+            var c = map.getCenter(),
+                clusterLayer = new NPMobile.Layers.ClusterLayer('聚合', {
                     selectZoom: map.getMaxZoom(),
                     maxZoom: map.getMaxZoom(),
                     distance: 200,
-                    fontSize:'50px',
+                    threshold: 10,
+                    fontSize: '50px',
                     clusterClickModel: 'zoom',
-                    fontColor:'blank',
+                    fontColor: 'blank',
+                    statistics: [{
+                        x: c.lon,
+                        y: c.lat,
+                        label: '1000'
+                    }],
+                    minZoom: 6,
                     defaultStyle: {
                         fontColor: 'white',
                         customLabelOffset: {
@@ -223,8 +230,7 @@
                         }
                     }
                 }),
-                markers = [],
-                c = map.getCenter();
+                markers = [];
             clusterLayer.register(
                 'getUrl',
                 function() {
@@ -233,8 +239,8 @@
                 'getImageSize',
                 function() {
                     return {
-                        width: 32,
-                        height: 32
+                        w: 32,
+                        h: 32
                     }
                 }).register(
                 'getContent',
@@ -249,7 +255,7 @@
             for (var i = 0; i < 100; i++) {
                 markers.push(new NPMobile.Geometry.ClusterMarker(new NPMobile.Geometry.Point(c.lon + Math.random() * Math.pow(-1, i) * 0.1, c.lat + Math.random() * Math.pow(-1, i + 1) * 0.1)));
             }
-            clusterLayer.addOverlays(markers);
+            clusterLayer.addOverlays(markers, true);
 
             /////////**************** 注册map click 事件************************************
             // map.register('click', function(f) {
@@ -271,6 +277,15 @@
     }
 
     createMap();
+    window.setInterval(function() {
+        if (typeof WPF.CallFromJs != 'undefined') {
+            WPF.CallFromJs(new Date().getTime() + "");
+        }
+    }, 5000);
+
+    function add(x,y) {
+        return x + y;
+    }
     </script>
 </body>
 

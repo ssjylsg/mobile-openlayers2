@@ -108,12 +108,28 @@
                 try {
                     handler(message.data, responseCallback);
                 } catch (exception) {
-                    if (typeof console != 'undefined') {                       
-                       window.NPMobile.logger.error("WARNING: javascript handler threw.",message, exception);
+                    if (typeof console != 'undefined') {
+                        window.NPMobile.logger.error("WARNING: javascript handler threw.", message, exception);
                     }
                 }
             }
         });
+    }
+
+/**
+ * [inflate description]
+ * @param  {[type]} s [description]
+ * @return {[type]}   [description]
+ */
+    function inflate(s) {
+        var strData = atob(s);
+        var charData = strData.split('').map(function(x) {
+            return x.charCodeAt(0);
+        });
+        var binData = new Uint8Array(charData);
+        var data = pako.inflate(binData);
+        strData = String.fromCharCode.apply(null, new Uint16Array(data));
+        return strData;
     }
 
     //提供给native调用,receiveMessageQueue 在会在页面加载完后赋值为null,所以
