@@ -1,0 +1,113 @@
+<link rel="stylesheet" href="module/map/map.css">
+<div class="map">
+    <p class="mapTop"><i class="icon iconfont">&#xe622;</i>&nbsp;&nbsp;&nbsp;地图配置</p>
+    <div class="mapTree">
+        <div class="status">
+            <div class="searchInput">
+                <select class="selectType">
+                    <option value="">全部</option>
+                    <option value="">未标记</option>
+                    <option value="">已标记</option>
+                </select>
+                <input class="searchContent" type="text" placeholder="请输入关键字">
+            </div>
+        </div>
+        <div class="Import">
+            <p class="ImportTips">请点选至地图标注</p>
+            <p class="ImportButton" ng-click="ImportButton()">批量导入</p>
+        </div>
+        <form class="import_module" ng-hide="import_module_hide" id="uploadForm">
+            <div class="title">
+                <p>批量导入</p>
+                <p ng-click="clickButton()"></p>
+            </div>
+            <div class="inport_step">
+                <div class="one_step">
+                    <p>第一步&nbsp;:&nbsp;请先导出模板</p>
+                    <p ng-click="export_module_but()">导出模板</p>
+                </div>
+                <p class="inport_table">如下图填写模板</p>
+                <table class="inport_table_list" cellspacing="0">
+                    <thead>
+                      <th align="left">摄像机名称</th>
+                      <th>AV通道号</th>
+                      <th>经度</th>
+                      <th>纬度</th>
+                      <th>角度</th>
+                    </thead>
+                    <tr>
+                      <td align="left">摄像机1</td>
+                      <td>AV通道1</td>
+                      <td>108.935..</td>
+                      <td>108.935..</td>
+                      <td>30</td>
+                    </tr>
+                    <tr>
+                      <td align="left">摄像机1</td>
+                      <td>AV通道1</td>
+                      <td>108.935..</td>
+                      <td>108.935..</td>
+                      <td>30</td>
+                    </tr>
+                    <tr>
+                      <td align="left">摄像机1</td>
+                      <td>AV通道1</td>
+                      <td>108.935..</td>
+                      <td>108.935..</td>
+                      <td>30</td>
+                    </tr>
+                    <tr>
+                      <td align="left">摄像机1</td>
+                      <td>AV通道1</td>
+                      <td>108.935..</td>
+                      <td>108.935..</td>
+                      <td>30</td>
+                    </tr>
+
+                </table>
+                <div class="two_step">
+                  <p>第一步&nbsp;:&nbsp;请导入填写完成的Excel模板</p>
+                  <input class="browseButton" type="file" name="file" onchange="angular.element(this).scope().uploadFile(this)">
+                  <p class="fileOpacity">浏览</p>
+                </div>
+                <input class="fileName_show" ng-model="export_text">
+                <p class="publish_button" ng-click="publish_button()">上传</p>
+            </div>
+            <p class="explain">
+                说明<br/>
+                1、选择要标注的点位，可视区域的摄像机（或组织机构）进行导出。<br/>
+                2、在导出的表格中补充每个摄像机的点位信息、可视角度（见表格中说明）。<br/>
+                3、将补充好信息的表格导入，即可完成摄相机点位信息的标定。
+            </p>
+        </form>
+        <ul id="map_tree" class="ztree">
+
+        </ul>
+    </div>
+
+
+
+
+    <div id="mapRight"></div>
+    <div id="test">
+      <div class="map_header">
+        <p id="title"></p>
+        <p ng-click="foot_button_cancle()"></p>
+      </div>
+      <div class="mapTip_content">
+        <p class="lon_moudle">
+          <span>经度&nbsp;&nbsp;:&nbsp;&nbsp;</span>
+          <input class="lon_title" type="text" id="longitude">
+        </p>
+        <p class="lon_moudle">
+          <span>纬度&nbsp;&nbsp;:&nbsp;&nbsp;</span>
+          <input class="lon_title" type="text" id="latitude">
+        </p>
+      </div>
+      <div class="foot_button">
+        <p class="foot_button_cancle" ng-click="foot_button_cancle()">取消</p>
+        <p class="foot_button_hold" ng-click="foot_button_hold()">保存</p>
+      </div>
+    </div>
+
+</div>

@@ -1,0 +1,19 @@
+ {
+ 	"mapOpts": {
+ 		"minZoom": 11,
+ 		"defaultZoom": 11,
+ 		"maxZoom": 18,
+ 		"projection": "EPSG:900913",
+ 		"displayProjection": "EPSG:4326"
+ 	},
+ 	"vectorLayer": [{
+ 		"layerName": "shanghaiBaseMap1",
+ 		"layerType": "NPMapLib.Layers.GaoDeLayer",
+ 		"layerOpt": {
+ 			"url": ["http://webrd01.is.autonavi.com/appmaptile??lang=zh_cn&size=1&scale=1&style=7", "http://webrd02.is.autonavi.com/appmaptile??lang=zh_cn&size=1&scale=1&style=7", "http://webrd03.is.autonavi.com/appmaptile??lang=zh_cn&size=1&scale=1&style=7", "http://webrd04.is.autonavi.com/appmaptile??lang=zh_cn&size=1&scale=1&style=7"],
+ 			"centerPoint": [116.39322, 39.91043],
+ 			"isBaseLayer": true
+ 		}
+ 	}],
+ 	"sattilateLayer": []
+ }

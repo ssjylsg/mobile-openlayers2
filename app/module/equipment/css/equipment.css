@@ -1,0 +1,229 @@
+.ztree li .dataMargin{
+  position: absolute;
+  top: 0px;
+  right: 0px;
+}
+.equipment{
+  position: relative;
+  width: 100%;
+  height: auot;
+}
+.step_tips{
+  display: none;
+  position: absolute;
+  top: 5px;
+  left: 50%;
+  margin-left: -125px;
+  width:250px;
+  height: 30px;
+  background: #5CB811;
+  text-align: center;
+  line-height: 30px;
+  font-size: 14px;
+  color: #fff;
+  border-radius: 5px;
+}
+.equipment_left{
+  float: left;
+  width: 20%;
+  height: 100%;
+  background: #f3f6f8;
+}
+.equipment_left .equipment_left_search{
+  position: relative;
+  width: 100%;
+  height: 60px;
+  background: #fff;
+}
+.equipment_left .equipment_left_search .equipment_left_search_content{
+  float: left;
+  margin-left: 5%;
+  margin-top: 14px;
+  width: 90%;
+  height: 32px;
+  outline: none;
+  border: solid 1px #d4dbdf;
+  border-radius: 5px;
+  box-sizing: border-box;
+  padding-left: 5px;
+}
+.equipment_left .equipment_left_search .searchButton{
+  position: absolute;
+  right: 6%;
+  top: 15px;
+}
+.equipment_right{
+  float: right;
+  width: 100%;
+  height: 100%;
+}
+.equipmentTop{
+  width: 100%;
+  height: 50px;
+  line-height: 50px;
+  box-sizing: border-box;
+  padding-left: 4%;
+  font-size: 14px;
+  color: #646b6e;
+  background: #f3f6f8;
+}
+
+.equipmentListTop{
+  width: 100%;
+  height: 60px;
+  background: #e5e9ec;
+}
+
+.equipmentListTop .equipmentListName{
+  float: left;
+  width: 10%;
+  height: 60px;
+  line-height: 60px;
+  font-size: 14px;
+  color: #646b6e;
+  box-sizing: border-box;
+  padding-left: 4%;
+}
+.equipmentListTop .equipmentAdd{
+  float: right;
+  width: 123px;
+  height: 30px;
+  border: solid 1px #fbfaf7;
+  line-height: 30px;
+  text-align: center;
+  font-size: 14px;
+  color: #646b6e;
+  background: #fbfaf7;
+  margin-right: 45px;
+  margin-top: 14px;
+  cursor: pointer;
+}
+.equipmentListTop .equipmentAdd:hover{
+  background: #fff;
+  color: #00a0e9;
+  border: solid 1px #fff;
+}
+.equipmentListTop .equipmentAdd:active{
+  background: #00a0e9;
+  color: #FFF;
+  border: solid 1px #00a0e9;
+}
+
+.table{
+  width: 100%;
+  height: auto;
+}
+.table thead{
+  width: 100%;
+  height: 32px;
+  background: #d4dbdf;
+}
+.table thead th{
+  font-size: 14px;
+  color: #4a4e50;
+}
+.table tr{
+  width: 100%;
+  height: 32px;
+  text-align: center;
+}
+.table tr:nth-child(2n){
+  background: #f3f6f8;
+}
+.table tr td{
+  color: #4D5254;
+  font-size:14px;
+  border-bottom: solid 1px #e5e9ec;
+  box-sizing: border-box;
+}
+
+/*
+.table tr td:nth-child(6){
+  width: 20%;
+}*/
+.table tr:hover{
+  background: #f1f6f8;
+  color: #0ca4ea;
+}
+.table tr:hover td{
+  height: 32px;
+  color: #0ca4ea;
+}
+
+
+.iconfont:hover{
+  color: #41565f;
+}
+.iconfont:active{
+  color: #0ca4ea;
+}
+.iconfont.icon1{
+  font-size:25px;
+}
+.iconfont.icon2{
+  font-size:21px;
+}
+.iconfont.icon4{
+  font-size:25px;
+}
+
+
+.equipmentAdd_ifeame{
+	width: 500px;
+	margin: 0 auto;
+	margin-top: 50px;
+}
+.equipmentAdd_ifeame .input_text{
+	width: 100%;
+	height: 32px;
+	margin-bottom: 20px;
+}
+.equipmentAdd_ifeame .input_text .inputName{
+	float: left;
+	width: 130px;
+	height: 32px;
+	line-height: 32px;
+	text-align: right;
+	font-size: 14px;
+  color: #4d5254;
+}
+.equipmentAdd_ifeame .input_text input{
+	float: left;
+	width: 240px;
+	height: 32px;
+	border:solid 1px #dcdcdc;
+	box-sizing: border-box;
+	padding-left: 15px;
+  outline: none;
+}
+.equipmentAdd_ifeame .input_text input:hover{
+	border:solid 1px #707070;
+}
+.equipmentAdd_ifeame .input_text input:focus{
+	border:solid 1px #46a2ff;
+}
+.equipmentAdd_ifeame .input_text .ipPoint{
+	float: left;
+	width: 130px;
+	height: 32px;
+	line-height: 32px;
+	background: url(../../../images/xin.png) no-repeat 4px center;
+  box-sizing: border-box;
+  padding-left: 15px;
+  color: red;
+}
+.equipmentAdd_ifeame .input_text .ipPoint.wanIp{
+	background: none;
+}
+
+.sync_page{
+  width: 500px;
+  margin: 0 auto;
+}
+.sync_model{
+  width: 100%;
+  height: 270px;
+  /*border-bottom: solid 1px #dcdcdc;*/
+  box-sizing: border-box;
+  padding: 10px;
+}

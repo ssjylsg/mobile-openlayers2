@@ -1,0 +1,145 @@
+body,html{
+  width: 100%;
+  height: 100%;
+}
+.list{
+  width: 100%;
+  height: auto;
+}
+.header{
+  width: 100%;
+  height: 60px;
+  background: #00a0e9;
+}
+.logDes{
+  float: left;
+  width: 300px;
+  height: 60px;
+  line-height: 60px;
+  font-size: 18px;
+  color: #fff;
+  margin-left: 3.6%;
+}
+.logDes img{
+  float: left;
+  margin-right: 10px;
+  margin-top: 15px;
+}
+.header .backed{
+  float: right;
+  margin-right: 45px;
+  margin-top: 19px;
+  width: 62px;
+  height: 22px;
+  border: solid 1px #017bb3;
+  background: #0bb1fd;
+  cursor: pointer;
+}
+.header .backed:hover,active{
+  background: #fff;
+  color: #000;
+}
+.header .loginName{
+  float: right;
+  margin-top: 19px;
+  margin-right: 35px;
+  width: auto;
+  height: 24px;
+}
+.header .loginName span{
+  float: left;
+  font-size: 14px;
+  color: #c2e1f7;
+}
+.header .loginName span:nth-child(1){
+  width: 20px;
+  height: 20px;
+  margin-right: 10px;
+  background: url(../../images/admin.png) no-repeat center;
+}
+.nav{
+  float: left;
+  width: auto;
+  height: 60px;
+  margin-left: 100px;
+}
+.nav li{
+  float: left;
+  width: 100px;
+  height: 60px;
+  line-height: 60px;
+  text-align: center;
+}
+.nav li a{
+  float: left;
+  width: 100px;
+  height: 60px;
+  line-height: 60px;
+  color: #fff;
+  font-size: 16px;
+}
+.nav li a:hover{
+  background: #0090d1;
+}
+.navBackColor{
+  background: #0090d1;
+}
+.backed{
+  width: 62px;
+  height: 22px;
+  text-align: center;
+  line-height: 22px;
+  font-size: 14px;
+  color: #e7f7ff;
+}
+#websocket_module{
+  position: absolute;
+  right: 10px;
+  bottom: 35px;
+  width: 325px;
+  height: 150px;
+  z-index: 1500;
+  border: solid 1px #dddddd;
+  border-bottom: solid 5px #dddddd;
+  border-radius: 8px;
+}
+#websocket_module .top_tips{
+  width: 100%;
+  height: 35px;
+  background: #f3f3f3;
+}
+#websocket_module .top_tips p:nth-child(1){
+  float: left;
+  width: auto;;
+  height: 35px;
+  line-height: 35px;
+  font-size: 14px;
+  color: #444;
+  background: url(../../images/notify.png) 5px 11px no-repeat;
+  padding-left: 25px;
+}
+#websocket_module .top_tips p:nth-child(2){
+  float: right;
+  width: 17px;
+  height: 17px;
+  margin: 10px 10px 0 0;
+  background: url(../../js/lib/layer/skin/default/close.png) no-repeat center;
+}
+#websocket_module .tips_content{
+  width: 100%;
+  height: 115px;
+  box-sizing: border-box;
+  padding: 10px;
+  color: #666666;
+  line-height: 18px;
+  background: #fff;
+}
+.foot{
+  width: 100%;
+  height: 32px;
+  background: #e6ebee;
+  font-size：12px;
+  line-height: 32px;
+  text-align: center;
+  color: #878f94;
+}

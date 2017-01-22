@@ -1,0 +1,41 @@
+
+<div class="header">
+    <p class="logDes">
+      <img src="images/logo.png">
+      移动视屏监控配置平台
+    </p>
+    <ul class="nav">
+        <!-- <li>
+          <a ng-class="{navBackColor:rooTabColor === 'equip'}" ng-click = changeTab("equip") href="#/list/equipment">设备管理</a>
+        </li>
+        <li>
+          <a ng-class="{navBackColor:rooTabColor === 'transcod'}" ng-click = changeTab("transcod") href="#/list/transcoding/transcodingList">转码管理</a>
+        </li>
+        <li>
+          <a ng-class="{navBackColor:rooTabColor === 'screen'}" ng-click = changeTab("screen") href="#/list/screenPublish">视频发布</a>
+        </li> -->
+        <li>
+          <a ng-class="{navBackColor:rooTabColor === '3dMap'}" ng-click = changeTab("screen") href="#/list/3dMap">三维地图</a>
+        </li>
+        <li>
+          <a ng-class="{navBackColor:rooTabColor === 'map'}" ng-click = changeTab("map") href="#/list/map">二维地图</a>
+        </li>
+     <!--    <li>
+          <a ng-class="{navBackColor:rooTabColor === 'user'}" ng-click = changeTab("user") href="#/list/user/userGroup">用户管理</a>
+        </li> -->
+    </ul>
+    <p class="backed" ng-click="login_backed()">退出</p>
+    <p class="loginName">
+      <span></span>
+      <span>{{login_name}}</span>
+    </p>
+</div>
+<div ui-view></div>
+<div id="websocket_module">
+  <div class="top_tips">
+    <p>系统配置</p>
+    <p ng-click="close_button()"></p>
+  </div>
+  <p class="tips_content"></p>
+</div>
+<div class="foot">东方网力科技股份有限公司</div>

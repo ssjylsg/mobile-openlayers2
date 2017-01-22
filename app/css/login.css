@@ -1,0 +1,114 @@
+
+.login{
+  width: 100%;
+  height: 100%;
+  background-image: url(../images/loginBg.png);
+  background-size: cover;
+  overflow: auto;
+}
+.login_content{
+  position: relative;
+  width: 342px;
+  height: auto;
+  margin: 0 auto;
+  overflow: auto;
+  box-sizing: border-box;
+  padding-top: 92px;
+}
+.loginTips{
+  display: none;
+  position: absolute;
+  top: 60px;
+  width:342px;
+  height: 32px;
+  margin-top: 60px;
+  background: #e8484f;
+  text-align: center;
+  line-height: 32px;
+  color: #fff;
+  font-size: 14px;
+  border-radius: 32px;
+}
+.login_images{
+  float: left;
+  width: 286px;
+  height: 178px;
+  margin-top: 110px;
+  margin-left:28px;
+}
+::-webkit-input-placeholder {
+    color: #004869;
+}
+.login input{
+  float: left;
+  width: 100%;
+  height: 40px;
+  border: solid 1px #30a8df;
+  background-position: 10px center;
+  background-color:rgba(128,215,254,0.3);
+  font-size: 14px;
+  color: #004869;
+  box-sizing: border-box;
+  padding-left: 35px;
+  outline: none;
+}
+.login input:focus{
+  background-color:rgba(128,215,254,0.6);
+}
+.userName{
+  margin-top: 50px;
+  background: url(../images/user.png) no-repeat;
+}
+.passWord{
+  margin-top: 10px;
+  background: url(../images/password.png) no-repeat;
+}
+.button_login{
+  float: left;
+  margin-top: 26px;
+  width: 100%;
+  height: 44px;
+  background: #fff;
+  text-align: center;
+  line-height: 44px;
+  font-size: 14px;
+  color: #00A0E9;
+  cursor: pointer;
+}
+.button_login:hover,active{
+  background: #00A0E9;
+  color: #fff;
+}
+.footer{
+  position: absolute;
+  bottom: 27px;
+  left: 50%;
+  margin-left: -171px;
+  width: 343px;
+  height: 45px;
+}
+
+.about{
+  position: absolute;
+  right: 0;
+  top: 30px;
+  width: 85px;
+  height: 25px;
+  background: url(../images/about.png) no-repeat left center;
+  font-size: 14px;
+  color: #fff;
+  box-sizing: border-box;
+  padding-left: 35px;
+  line-height: 25px;
+}
+
+.about_layer{
+  width: 656px;
+  height: 367px;
+  background:url(../images/about_layer.png);
+  background-size: cover;
+}
+.logo_blue{
+  float: left;
+  margin: 45px 0
+}

@@ -1,0 +1,55 @@
+.screenPublish{
+  width: 100%;
+  height: auto;
+}
+.screenTop{
+  width: 100%;
+  height: 50px;
+  line-height: 50px;
+  box-sizing: border-box;
+  padding-left: 4%;
+  font-size: 14px;
+  color: #646b6e;
+  background: #f3f6f8;
+}
+
+.screenTree{
+  float: left;
+  width: 20%;
+  background: #f3f6f8;
+}
+.screenTree .status{
+  width: 100%;
+  height: 60px;
+  background: #fff;
+  box-sizing: border-box;
+  padding-left: 15%;
+}
+.screenTree .status li{
+  float: left;
+  padding: 0 14px;
+  height: 60px;
+  line-height: 60px;
+  font-size: 14px;
+  color: #646b6e;
+  cursor: pointer;
+}
+.screenTree .status li:hover{
+  color: #00a0e9;
+}
+#map_tree{
+  width: 100%;
+  /*height: 400px;*/
+  margin-top: 20px;
+  box-sizing: border-box;
+  padding-left: 10%;
+  overflow: auto;
+}
+
+#screenMap{
+  position: absolute;
+  left:20%;
+  width: 80%;
+  box-sizing: border-box;
+  border: solid 1px #dcdcdc;
+}

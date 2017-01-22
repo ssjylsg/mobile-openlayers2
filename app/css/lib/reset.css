@@ -1,0 +1,36 @@
+@charset "utf-8";
+body,div,dl,dt,dd,ul,ol,li,h1,h2,h3,h4,h5,h6,pre,code,form,fieldset,legend,input,textarea,p,blockquote,th,td{margin:0;padding:0;font-size:12px;}
+h1,h2,h3,h4,h5,h6{ font-weight: normal;}
+li { list-style: none; }
+img { border: none; }
+select,
+textarea { outline: none; border: none; background: none; border-radius: 0;
+  -webkit-border-radius: 0;
+  -webkit-appearance: none;
+  background-image: -webkit-linear-gradient(transparent, transparent);
+  background-image: linear-gradient(transparent, transparent);
+  font-family:"Helvetica", "Arial";
+}
+textarea { resize: none; }
+html { -webkit-text-size-adjust:none;overflow-x:hidden;}
+article， aside， details， figcaption， figure， footer， header， hgroup， menu， nav， section { display: block; }
+img { max-width: 100%; height:auto; width: auto\9; /* ie8 */ vertical-align:middle; }
+.video embed， .video object， .video iframe { width: 100%; height: auto; }
+a { border:0; text-decoration: none; outline: none;}
+a,button,input{-webkit-tap-highlight-color:rgba(255,0,0,0);}
+em{ font-style: normal;}
+
+.clearfix:after,
+.clearfix:before { content: ""; display: table; }
+.clearfix:after { clear: both; }
+.clearfix { zoom: 1; }
+body {/*font-family:"Helvetica", "Arial";*/ overflow-x:hidden;}
+body{font-family: "Segoe UI", "Lucida Grande", Helvetica, Arial,
+"Microsoft YaHei", FreeSans, Arimo, "Droid Sans",
+"wenquanyi micro hei", "Hiragino Sans GB", "Hiragino Sans GB W3",
+FontAwesome, sans-serif;font-size:12px;}
+
+
+
+
+

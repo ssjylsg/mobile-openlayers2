@@ -1,0 +1,17 @@
+
+<div class="login" ng-keyup="myKeyup($event)">
+  <div class="login_content">
+    <p class="loginTips">用户名或密码错误</p>
+    <img class="login_images" src="images/login.png" alt="">
+    <input class="userName" type="text" placeholder="用户名" ng-model="userName">
+    <input class="passWord" type="text" placeholder="密码" ng-model="passWord">
+    <p class="button_login" ng-click="goList()">登录</p>
+  </div>
+  <p class="about" ng-click="about()">关于</p>
+
+  <div class="about_layer" ng-hide="about_layer">
+      <img class="logo_blue" src="images/logo-Blue.png" alt="">
+  </div>
+  <img class="footer" src="images/footer_white.png">
+
+</div>
