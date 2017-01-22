@@ -81,7 +81,7 @@ angular.module("map",["ui.router"])
     var mapTag = new MapPlatForm.Base.MapTag($scope.map);
     var MapGeometry = new MapPlatForm.Base.MapGeometry($scope.map);
     var markerParam = {
-        url: "../../images/step.png", //图片路径
+        url: "images/step.png", //图片路径
         size: { //[图片大小]
            width: 32,
            height: 32
