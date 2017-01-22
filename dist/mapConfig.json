@@ -1,19 +1,22 @@
- {
-     "mapOpts": {
-         "minZoom": 11,
-         "defaultZoom": 11,
-         "maxZoom": 18,
-         "projection": "EPSG:900913",
-         "displayProjection": "EPSG:4326"
-     },
-     "vectorLayer": [{
-         "layerName": "shanghaiBaseMap1",
-         "layerType": "NPMapLib.Layers.GaoDeLayer",
-         "layerOpt": {
-             "url": ["http://webrd01.is.autonavi.com/appmaptile??lang=zh_cn&size=1&scale=1&style=7", "http://webrd02.is.autonavi.com/appmaptile??lang=zh_cn&size=1&scale=1&style=7", "http://webrd03.is.autonavi.com/appmaptile??lang=zh_cn&size=1&scale=1&style=7", "http://webrd04.is.autonavi.com/appmaptile??lang=zh_cn&size=1&scale=1&style=7"],
-             "centerPoint": [116.39322, 39.91043],
-             "isBaseLayer": true
-         }
-     }],
-     "sattilateLayer": []
- }
+{
+    "mapOpts": {
+        "minZoom": 6,
+        "defaultZoom": 11,
+        "maxZoom": 18,
+        "centerPoint": [116.39322, 39.91043],
+        "projection": "EPSG:900913"
+    },
+    "vectorLayer": [{
+        "layerName": "shanghaiBaseMap1",
+        "layerType": "NPMapLib.Layers.BaiduTileLayer",
+        "layerOpt": {
+            "url": ["http://mapor1.bdimg.com/tile/?qt=tile&x=${x}&y=${y}&z=${z}&styles=pl&udt=20170101&scaler=1",
+                "http://mapor1.bdimg.com/tile/?qt=tile&x=${x}&y=${y}&z=${z}&styles=pl&udt=20170101&scaler=1",
+                "http://mapor0.bdimg.com/tile/?qt=tile&x=${x}&y=${y}&z=${z}&styles=pl&udt=20170101&scaler=1"
+            ],
+            "isBaseLayer": true,
+            "mapTyp": "EMap"
+        }
+    }],
+    "sattilateLayer": []
+}

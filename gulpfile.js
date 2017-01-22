@@ -136,7 +136,7 @@ gulp.task('minifyjs', function() {
         lib[i] = 'source/lib/' + lib[i];
     }
 
-    gulp.src(['NPMobileMap.js','measure.js']) //,'measure.js'
+    gulp.src(['NPMobileMap.js', 'measure.js']) //,'measure.js'
         .pipe(concat('NPMobileMap.js'))
         .pipe(rename('NPMobileMap.js'))
         .pipe(uglify())
@@ -146,12 +146,12 @@ gulp.task('minifyjs', function() {
     return gulp.src(lib)
         .pipe(concat('OpenLayers.js'))
         .pipe(rename('OpenLayers.js'))
-         .pipe(uglify())
+        .pipe(uglify())
         .pipe(gulp.dest('./dist/'));
 });
 gulp.task('watch', function() {
     fs.watchFile('NPMobileMap.js', function() {
-        gulp.src(['NPMobileMap.js','measure.js'])
+        gulp.src(['NPMobileMap.js', 'measure.js'])
             .pipe(concat('NPMobileMap.js'))
             .pipe(rename('NPMobileMap.js'))
             //.pipe(uglify())
@@ -161,7 +161,7 @@ gulp.task('watch', function() {
 gulp.task('doc', function(cb) {
     del(['document'], cb);
     var lib = [
-        'NPMobileMap.js','measure.js'
+        'NPMobileMap.js', 'measure.js'
     ];
     lib.push('README.md');
     var config = {
@@ -180,7 +180,9 @@ gulp.task('doc', function(cb) {
         }
     };
 
-    gulp.src(lib, { read: false })
+    gulp.src(lib, {
+            read: false
+        })
         .pipe(jsdoc(config, cb));
 });
 gulp.task('copy', function() {
@@ -299,4 +301,20 @@ gulp.task('default', ['minifycss', 'minifyjs', 'copy', 'createFile'], function()
 gulp.task('zip', function() {
     return gulp.src('dist/**')
         .pipe(zip('NPMAP3D_V' + v + '.zip')).pipe(gulp.dest('VERSION'));
+});
+
+
+
+gulp.task('toc', function() {
+    var i5ting_toc = require('gulp-i5ting-toc');
+
+    var opt = {
+        is_open: true,
+        markd_config: {
+            debug: false
+        }
+    }
+    var source = process.cwd() + '\NPGISMobileHelper.md';
+    console.log(source)
+    gulp.src(source).pipe(i5ting_toc(opt));
 });

@@ -277,9 +277,10 @@
     }
 
     createMap();
+    //WPF = {};
     window.setInterval(function() {
-        if (typeof WPF.CallFromJs != 'undefined') {
-            WPF.CallFromJs(new Date().getTime() + "");
+        if (typeof window.CallFromJs != 'undefined') {
+            window.CallFromJs(new Date().getTime() + "");
         }
     }, 5000);
 

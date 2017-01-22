@@ -69,6 +69,7 @@
     function _fetchQueue() {
         window.NPMobile.logger.info(sendMessageQueue);
         var messageQueueString = JSON.stringify(sendMessageQueue);
+         window.NPMobile.logger.info(messageQueueString)
         sendMessageQueue = [];
         //android can't read directly the return data, so we can reload iframe src to communicate with java
         messagingIframe.src = CUSTOM_PROTOCOL_SCHEME + '://return/_fetchQueue/' + encodeURIComponent(messageQueueString);

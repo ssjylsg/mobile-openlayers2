@@ -371,7 +371,23 @@ OpenLayers.Feature.Vector = OpenLayers.Class(OpenLayers.Feature, {
         }
         var count = f.attributes.count ? (f.attributes.count === 1 ? '' : f.attributes.count) : '';
         if (count != '') {
-            return count > 20 ? "20+" : count + "";
+            var result = count;
+            if (count >= 10000) {
+                return "10000+";
+            } else if (count >= 1000 && count < 10000) {
+                return "1000+"
+            } else if (count >= 500 && count < 1000) {
+                return "500+"
+            } else if (count >= 200 && count < 500) {
+                return "200+"
+            } else if (count >= 100 && count < 200) {
+                return "100+"
+            } else if (count >= 50 && count < 100) {
+                return "50+"
+            } else if (count >= 10 && count < 50) {
+                return "10+"
+            }
+            return count;
         } else {
             return count;
         }
