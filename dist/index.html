@@ -278,13 +278,22 @@
 
     createMap();
     //WPF = {};
-    window.setInterval(function() {
-        if (typeof window.CallFromJs != 'undefined') {
-            window.CallFromJs(new Date().getTime() + "");
+    NPMobile.callMethod = function(methodName, method) {
+        var args = Array.prototype.slice.call(arguments).slice(1);
+        if (typeof CSharpe != "undefined" && typeof CSharpe[methodName] != "undefined") {
+            return CSharpe[methodName].apply(this, args);
+        } else {
+            return window[methodName] && window[methodName].apply(this, args);
         }
+    }
+    window.setInterval(function() {
+        //if (typeof CallFromJs != 'undefined') {
+        //(CallFromJs || CSharpe.CallFromJs)
+        NPMobile.callMethod('CallFromJs', new Date().getTime() + "");
+        //}
     }, 5000);
 
-    function add(x,y) {
+    function add(x, y) {
         return x + y;
     }
     </script>
