@@ -17,6 +17,17 @@
             "isBaseLayer": true,
             "mapTyp": "EMap"
         }
+    }, {
+        "layerName": "trafficLayer",
+        "layerType": "NPMapLib.Layers.BaiduTileLayer",
+        "layerOpt": {
+            "url": [
+            	"http://its.map.baidu.com:8002/traffic/TrafficTileService?level=${z}&x=${x}&y=${y}&time=1486951723098&v=081&smallflow=1&scaler=1"
+               
+            ],
+            "isBaseLayer": false,
+            "mapTyp": "EMap"
+        }
     }],
     "sattilateLayer": []
 }

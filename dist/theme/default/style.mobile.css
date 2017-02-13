@@ -108,3 +108,9 @@ div.olMapViewport {
     background: url( img/ipLocation_ac75181.png);
     background-size: 76px,auto;
 }
+.olImageLoadError {
+    display :none !important;
+    background-color: pink;
+    opacity: 0.5;
+    filter: alpha(opacity=50); /* IE */
+}
