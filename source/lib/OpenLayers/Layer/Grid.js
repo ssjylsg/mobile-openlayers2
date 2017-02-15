@@ -18,7 +18,7 @@
  *  - <OpenLayers.Layer.HTTPRequest>
  */
 OpenLayers.Layer.Grid = OpenLayers.Class(OpenLayers.Layer.HTTPRequest, {
-    
+
     /**
      * APIProperty: tileSize
      * {<OpenLayers.Size>}
@@ -34,7 +34,7 @@ OpenLayers.Layer.Grid = OpenLayers.Class(OpenLayers.Layer.HTTPRequest, {
      *     (bottom right).  Default is "bl".
      */
     tileOriginCorner: "bl",
-    
+
     /**
      * APIProperty: tileOrigin
      * {<OpenLayers.LonLat>} Optional origin for aligning the grid of tiles.
@@ -44,7 +44,7 @@ OpenLayers.Layer.Grid = OpenLayers.Class(OpenLayers.Layer.HTTPRequest, {
      *     <maxExtent>.  Default is ``null``.
      */
     tileOrigin: null,
-    
+
     /** APIProperty: tileOptions
      *  {Object} optional configuration options for <OpenLayers.Tile> instances
      *  created by this Layer, if supported by the tile class.
@@ -57,7 +57,7 @@ OpenLayers.Layer.Grid = OpenLayers.Class(OpenLayers.Layer.HTTPRequest, {
      *     Defaults is OpenLayers.Tile.Image.
      */
     tileClass: OpenLayers.Tile.Image,
-    
+
     /**
      * Property: grid
      * {Array(Array(<OpenLayers.Tile>))} This is an array of rows, each row is 
@@ -131,7 +131,7 @@ OpenLayers.Layer.Grid = OpenLayers.Class(OpenLayers.Layer.HTTPRequest, {
      * {Boolean} Indicates if tiles are being loaded.
      */
     loading: false,
-    
+
     /**
      * Property: backBuffer
      * {DOMElement} The back buffer.
@@ -212,7 +212,7 @@ OpenLayers.Layer.Grid = OpenLayers.Class(OpenLayers.Layer.HTTPRequest, {
      *     should not be zero.
      */
     className: null,
-    
+
     /**
      * Register a listener for a particular event with the following syntax:
      * (code)
@@ -253,7 +253,7 @@ OpenLayers.Layer.Grid = OpenLayers.Class(OpenLayers.Layer.HTTPRequest, {
      * startrow
      */
     gridLayout: null,
-    
+
     /**
      * Property: rowSign
      * {Number} 1 for grids starting at the top, -1 for grids starting at the
@@ -261,7 +261,8 @@ OpenLayers.Layer.Grid = OpenLayers.Class(OpenLayers.Layer.HTTPRequest, {
      */
     rowSign: null,
 
-    isChina:true,
+    isChina: true,
+    images: {},
 
     /**
      * Property: transitionendEvents
@@ -283,8 +284,8 @@ OpenLayers.Layer.Grid = OpenLayers.Class(OpenLayers.Layer.HTTPRequest, {
      * options - {Object} Hashtable of extra options to tag onto the layer
      */
     initialize: function(name, url, params, options) {
-        OpenLayers.Layer.HTTPRequest.prototype.initialize.apply(this, 
-                                                                arguments);
+        OpenLayers.Layer.HTTPRequest.prototype.initialize.apply(this,
+            arguments);
         this.grid = [];
         this._removeBackBuffer = OpenLayers.Function.bind(this.removeBackBuffer, this);
 
@@ -305,7 +306,7 @@ OpenLayers.Layer.Grid = OpenLayers.Class(OpenLayers.Layer.HTTPRequest, {
 
         if (this.options.className === undefined) {
             this.className = this.singleTile ? 'olLayerGridSingleTile' :
-                                               'olLayerGrid';
+                'olLayerGrid';
         }
     },
 
@@ -341,7 +342,7 @@ OpenLayers.Layer.Grid = OpenLayers.Class(OpenLayers.Layer.HTTPRequest, {
 
         this.grid = null;
         this.tileSize = null;
-        OpenLayers.Layer.HTTPRequest.prototype.destroy.apply(this, arguments); 
+        OpenLayers.Layer.HTTPRequest.prototype.destroy.apply(this, arguments);
     },
 
     /**
@@ -364,11 +365,11 @@ OpenLayers.Layer.Grid = OpenLayers.Class(OpenLayers.Layer.HTTPRequest, {
      * Go through and remove all tiles from the grid, calling
      *    destroy() on each of them to kill circular references
      */
-    clearGrid:function() {
+    clearGrid: function() {
         if (this.grid) {
-            for(var iRow=0, len=this.grid.length; iRow<len; iRow++) {
+            for (var iRow = 0, len = this.grid.length; iRow < len; iRow++) {
                 var row = this.grid[iRow];
-                for(var iCol=0, clen=row.length; iCol<clen; iCol++) {
+                for (var iCol = 0, clen = row.length; iCol < clen; iCol++) {
                     var tile = row[iCol];
                     this.destroyTile(tile);
                 }
@@ -379,18 +380,18 @@ OpenLayers.Layer.Grid = OpenLayers.Class(OpenLayers.Layer.HTTPRequest, {
         }
     },
 
-   /**
-    * APIMethod: addOptions
-    * 
-    * Parameters:
-    * newOptions - {Object}
-    * reinitialize - {Boolean} If set to true, and if resolution options of the
-    *     current baseLayer were changed, the map will be recentered to make
-    *     sure that it is displayed with a valid resolution, and a
-    *     changebaselayer event will be triggered.
-    */
-    addOptions: function (newOptions, reinitialize) {
-        var singleTileChanged = newOptions.singleTile !== undefined && 
+    /**
+     * APIMethod: addOptions
+     * 
+     * Parameters:
+     * newOptions - {Object}
+     * reinitialize - {Boolean} If set to true, and if resolution options of the
+     *     current baseLayer were changed, the map will be recentered to make
+     *     sure that it is displayed with a valid resolution, and a
+     *     changebaselayer event will be triggered.
+     */
+    addOptions: function(newOptions, reinitialize) {
+        var singleTileChanged = newOptions.singleTile !== undefined &&
             newOptions.singleTile !== this.singleTile;
         OpenLayers.Layer.HTTPRequest.prototype.addOptions.apply(this, arguments);
         if (this.map && singleTileChanged) {
@@ -403,7 +404,7 @@ OpenLayers.Layer.Grid = OpenLayers.Class(OpenLayers.Layer.HTTPRequest, {
             }
         }
     },
-    
+
     /**
      * APIMethod: clone
      * Create a clone of this layer
@@ -414,13 +415,13 @@ OpenLayers.Layer.Grid = OpenLayers.Class(OpenLayers.Layer.HTTPRequest, {
      * Returns:
      * {<OpenLayers.Layer.Grid>} An exact clone of this OpenLayers.Layer.Grid
      */
-    clone: function (obj) {
-        
+    clone: function(obj) {
+
         if (obj == null) {
             obj = new OpenLayers.Layer.Grid(this.name,
-                                            this.url,
-                                            this.params,
-                                            this.getOptions());
+                this.url,
+                this.params,
+                this.getOptions());
         }
 
         //get all additions from superclasses
@@ -430,7 +431,7 @@ OpenLayers.Layer.Grid = OpenLayers.Class(OpenLayers.Layer.HTTPRequest, {
         if (this.tileSize != null) {
             obj.tileSize = this.tileSize.clone();
         }
-        
+
         // we do not want to copy reference to grid, so we make a new array
         obj.grid = [];
         obj.gridResolution = null;
@@ -441,7 +442,7 @@ OpenLayers.Layer.Grid = OpenLayers.Class(OpenLayers.Layer.HTTPRequest, {
         obj.numLoadingTiles = 0;
 
         return obj;
-    },    
+    },
 
     /**
      * Method: moveTo
@@ -454,19 +455,19 @@ OpenLayers.Layer.Grid = OpenLayers.Class(OpenLayers.Layer.HTTPRequest, {
      * zoomChanged - {Boolean}
      * dragging - {Boolean}
      */
-    moveTo:function(bounds, zoomChanged, dragging) {
+    moveTo: function(bounds, zoomChanged, dragging) {
 
         OpenLayers.Layer.HTTPRequest.prototype.moveTo.apply(this, arguments);
 
         bounds = bounds || this.map.getExtent();
 
         if (bounds != null) {
-             
+
             // if grid is empty or zoom has changed, we *must* re-tile
             var forceReTile = !this.grid.length || zoomChanged;
-            
+
             // total bounds of the tiles
-            var tilesBounds = this.getTilesBounds();            
+            var tilesBounds = this.getTilesBounds();
 
             // the new map resolution
             var resolution = this.map.getResolution();
@@ -475,13 +476,13 @@ OpenLayers.Layer.Grid = OpenLayers.Class(OpenLayers.Layer.HTTPRequest, {
             var serverResolution = this.getServerResolution(resolution);
 
             if (this.singleTile) {
-                
+
                 // We want to redraw whenever even the slightest part of the 
                 //  current bounds is not contained by our tile.
                 //  (thus, we do not specify partial -- its default is false)
 
-                if ( forceReTile ||
-                     (!dragging && !tilesBounds.containsBounds(bounds))) {
+                if (forceReTile ||
+                    (!dragging && !tilesBounds.containsBounds(bounds))) {
 
                     // In single tile mode with no transition effect, we insert
                     // a non-scaled backbuffer when the layer is moved. But if
@@ -490,11 +491,11 @@ OpenLayers.Layer.Grid = OpenLayers.Class(OpenLayers.Layer.HTTPRequest, {
                     // an ill-positioned image will be visible during the zoom
                     // transition.
 
-                    if(zoomChanged && this.transitionEffect !== 'resize') {
+                    if (zoomChanged && this.transitionEffect !== 'resize') {
                         this.removeBackBuffer();
                     }
 
-                    if(!zoomChanged || this.transitionEffect === 'resize') {
+                    if (!zoomChanged || this.transitionEffect === 'resize') {
                         this.applyBackBuffer(resolution);
                     }
 
@@ -514,12 +515,27 @@ OpenLayers.Layer.Grid = OpenLayers.Class(OpenLayers.Layer.HTTPRequest, {
                             this.map.getMaxExtent()
                     });
 
-                if(forceReTile) {
-                    if(zoomChanged && (this.transitionEffect === 'resize' ||
-                                          this.gridResolution === resolution)) {
+                if (forceReTile) {
+                    if (zoomChanged && (this.transitionEffect === 'resize' ||
+                            this.gridResolution === resolution)) {
                         this.applyBackBuffer(resolution);
                     }
-                    this.initGriddedTiles(bounds);
+                    if (this.CLASS_NAME === "OpenLayers.Layer.gaode") {
+                        if (this.clearImages) {
+                            this.clearImages();
+                        }
+                        if (zoomChanged) {
+                            this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                            this.canvas.style.left = "0px";
+                            this.canvas.style.top = "0px";
+                        } else {
+                            this.canvas.style.left = 0 - parseInt(this.div.parentElement.style.left.replace("px", "")) + "px";
+                            this.canvas.style.top = 0 - parseInt(this.div.parentElement.style.top.replace("px", "")) + "px";
+                        }
+                        this.moveGriddedTiles(true);
+                    } else {
+                        this.initGriddedTiles(bounds);
+                    }
                 } else {
                     this.moveGriddedTiles();
                 }
@@ -578,13 +594,13 @@ OpenLayers.Layer.Grid = OpenLayers.Class(OpenLayers.Layer.HTTPRequest, {
                         // pixel index within tile
                         i: Math.floor((dtx - col) * tileWidth),
                         j: Math.floor((dty - row) * tileHeight)
-                    };                    
+                    };
                 }
             }
         }
         return data;
     },
-    
+
     /**
      * Method: destroyTile
      *
@@ -610,10 +626,10 @@ OpenLayers.Layer.Grid = OpenLayers.Class(OpenLayers.Layer.HTTPRequest, {
     getServerResolution: function(resolution) {
         var distance = Number.POSITIVE_INFINITY;
         resolution = resolution || this.map.getResolution();
-        if(this.serverResolutions &&
-           OpenLayers.Util.indexOf(this.serverResolutions, resolution) === -1) {
+        if (this.serverResolutions &&
+            OpenLayers.Util.indexOf(this.serverResolutions, resolution) === -1) {
             var i, newDistance, newResolution, serverResolution;
-            for(i=this.serverResolutions.length-1; i>= 0; i--) {
+            for (i = this.serverResolutions.length - 1; i >= 0; i--) {
                 newResolution = this.serverResolutions[i];
                 newDistance = Math.abs(newResolution - resolution);
                 if (newDistance > distance) {
@@ -651,13 +667,13 @@ OpenLayers.Layer.Grid = OpenLayers.Class(OpenLayers.Layer.HTTPRequest, {
      * resolution - {Number} The resolution to transition to.
      */
     applyBackBuffer: function(resolution) {
-        if(this.backBufferTimerId !== null) {
+        if (this.backBufferTimerId !== null) {
             this.removeBackBuffer();
         }
         var backBuffer = this.backBuffer;
-        if(!backBuffer) {
+        if (!backBuffer) {
             backBuffer = this.createBackBuffer();
-            if(!backBuffer) {
+            if (!backBuffer) {
                 return;
             }
             if (resolution === this.gridResolution) {
@@ -677,12 +693,13 @@ OpenLayers.Layer.Grid = OpenLayers.Class(OpenLayers.Layer.HTTPRequest, {
             };
             this.backBufferResolution = this.gridResolution;
         }
-        
+
         var ratio = this.backBufferResolution / resolution;
 
         // scale the tiles inside the back buffer
-        var tiles = backBuffer.childNodes, tile;
-        for (var i=tiles.length-1; i>=0; --i) {
+        var tiles = backBuffer.childNodes,
+            tile;
+        for (var i = tiles.length - 1; i >= 0; --i) {
             tile = tiles[i];
             tile.style.top = ((ratio * tile._i * backBuffer._th) | 0) + 'px';
             tile.style.left = ((ratio * tile._j * backBuffer._tw) | 0) + 'px';
@@ -692,7 +709,7 @@ OpenLayers.Layer.Grid = OpenLayers.Class(OpenLayers.Layer.HTTPRequest, {
 
         // and position it (based on the grid's top-left corner)
         var position = this.getViewPortPxFromLonLat(
-                this.backBufferLonLat, resolution);
+            this.backBufferLonLat, resolution);
         var leftOffset = this.map.layerContainerOriginPx.x;
         var topOffset = this.map.layerContainerOriginPx.y;
         var left = Math.round(position.x - leftOffset) + 'px';
@@ -711,26 +728,26 @@ OpenLayers.Layer.Grid = OpenLayers.Class(OpenLayers.Layer.HTTPRequest, {
      */
     createBackBuffer: function() {
         var backBuffer;
-        if(this.grid.length > 0) {
+        if (this.grid.length > 0) {
             backBuffer = document.createElement('div');
             backBuffer.id = this.div.id + '_bb';
             backBuffer.className = 'olBackBuffer';
             backBuffer.style.position = 'absolute';
             var map = this.map;
             backBuffer.style.zIndex = this.transitionEffect === 'resize' ?
-                    this.getZIndex() - 1 :
-                    // 'map-resize':
-                    map.Z_INDEX_BASE.BaseLayer -
-                            (map.getNumLayers() - map.getLayerIndex(this));
-            for(var i=0, lenI=this.grid.length; i<lenI; i++) {
-                for(var j=0, lenJ=this.grid[i].length; j<lenJ; j++) {
+                this.getZIndex() - 1 :
+                // 'map-resize':
+                map.Z_INDEX_BASE.BaseLayer -
+                (map.getNumLayers() - map.getLayerIndex(this));
+            for (var i = 0, lenI = this.grid.length; i < lenI; i++) {
+                for (var j = 0, lenJ = this.grid[i].length; j < lenJ; j++) {
                     var tile = this.grid[i][j],
                         markup = this.grid[i][j].createBackBuffer();
                     if (markup) {
                         markup._i = i;
                         markup._j = j;
                         markup._w = this.singleTile ?
-                                this.getImageSize(tile.bounds).w : tile.size.w;
+                            this.getImageSize(tile.bounds).w : tile.size.w;
                         markup._h = tile.size.h;
                         markup.id = tile.id + '_bb';
                         backBuffer.appendChild(markup);
@@ -749,19 +766,19 @@ OpenLayers.Layer.Grid = OpenLayers.Class(OpenLayers.Layer.HTTPRequest, {
      */
     removeBackBuffer: function() {
         if (this._transitionElement) {
-            for (var i=this.transitionendEvents.length-1; i>=0; --i) {
+            for (var i = this.transitionendEvents.length - 1; i >= 0; --i) {
                 OpenLayers.Event.stopObserving(this._transitionElement,
                     this.transitionendEvents[i], this._removeBackBuffer);
             }
             delete this._transitionElement;
         }
-        if(this.backBuffer) {
+        if (this.backBuffer) {
             if (this.backBuffer.parentNode) {
                 this.backBuffer.parentNode.removeChild(this.backBuffer);
             }
             this.backBuffer = null;
             this.backBufferResolution = null;
-            if(this.backBufferTimerId !== null) {
+            if (this.backBufferTimerId !== null) {
                 window.clearTimeout(this.backBufferTimerId);
                 this.backBufferTimerId = null;
             }
@@ -778,6 +795,10 @@ OpenLayers.Layer.Grid = OpenLayers.Class(OpenLayers.Layer.HTTPRequest, {
      */
     moveByPx: function(dx, dy) {
         if (!this.singleTile) {
+            if (this.CLASS_NAME === "OpenLayers.Layer.gaode") {
+                this.canvas.style.left = 0 - parseInt(this.div.parentElement.style.left.replace("px", "")) + "px";
+                this.canvas.style.top = 0 - parseInt(this.div.parentElement.style.top.replace("px", "")) + "px";
+            }
             this.moveGriddedTiles();
         }
     },
@@ -790,12 +811,12 @@ OpenLayers.Layer.Grid = OpenLayers.Class(OpenLayers.Layer.HTTPRequest, {
      * Parameters:
      * size - {<OpenLayers.Size>}
      */
-    setTileSize: function(size) { 
+    setTileSize: function(size) {
         if (this.singleTile) {
             size = this.map.getSize();
             size.h = parseInt(size.h * this.ratio, 10);
             size.w = parseInt(size.w * this.ratio, 10);
-        } 
+        }
         OpenLayers.Layer.HTTPRequest.prototype.setTileSize.apply(this, [size]);
     },
 
@@ -808,20 +829,20 @@ OpenLayers.Layer.Grid = OpenLayers.Class(OpenLayers.Layer.HTTPRequest, {
      *     currently loaded tiles (including those partially or not at all seen 
      *     onscreen).
      */
-    getTilesBounds: function() {    
-        var bounds = null; 
-        
+    getTilesBounds: function() {
+        var bounds = null;
+
         var length = this.grid.length;
         if (length) {
             var bottomLeftTileBounds = this.grid[length - 1][0].bounds,
                 width = this.grid[0].length * bottomLeftTileBounds.getWidth(),
                 height = this.grid.length * bottomLeftTileBounds.getHeight();
-            
-            bounds = new OpenLayers.Bounds(bottomLeftTileBounds.left, 
-                                           bottomLeftTileBounds.bottom,
-                                           bottomLeftTileBounds.left + width, 
-                                           bottomLeftTileBounds.bottom + height);
-        }   
+
+            bounds = new OpenLayers.Bounds(bottomLeftTileBounds.left,
+                bottomLeftTileBounds.bottom,
+                bottomLeftTileBounds.left + width,
+                bottomLeftTileBounds.bottom + height);
+        }
         return bounds;
     },
 
@@ -838,21 +859,21 @@ OpenLayers.Layer.Grid = OpenLayers.Class(OpenLayers.Layer.HTTPRequest, {
         var center = bounds.getCenterLonLat();
         var tileWidth = bounds.getWidth() * this.ratio;
         var tileHeight = bounds.getHeight() * this.ratio;
-                                       
-        var tileBounds = 
-            new OpenLayers.Bounds(center.lon - (tileWidth/2),
-                                  center.lat - (tileHeight/2),
-                                  center.lon + (tileWidth/2),
-                                  center.lat + (tileHeight/2));
+
+        var tileBounds =
+            new OpenLayers.Bounds(center.lon - (tileWidth / 2),
+                center.lat - (tileHeight / 2),
+                center.lon + (tileWidth / 2),
+                center.lat + (tileHeight / 2));
 
         // store the resolution of the grid
         this.gridResolution = this.getServerResolution();
-  
+
         // same logic as OpenLayers.Tile#shouldDraw
         var maxExtent = this.maxExtent;
         if (maxExtent && (!this.displayOutsideMaxExtent ||
                 (this.map.baseLayer.wrapDateLine &&
-                this.maxExtent.equals(this.map.getMaxExtent())))) {
+                    this.maxExtent.equals(this.map.getMaxExtent())))) {
             tileBounds.left = Math.max(tileBounds.left, maxExtent.left);
             tileBounds.right = Math.min(tileBounds.right, maxExtent.right);
         }
@@ -875,10 +896,10 @@ OpenLayers.Layer.Grid = OpenLayers.Class(OpenLayers.Layer.HTTPRequest, {
             this.grid[0][0] = tile;
         } else {
             tile.moveTo(tileBounds, px);
-        }           
-        
+        }
+
         //remove all but our single tile
-        this.removeExcessTiles(1,1);
+        this.removeExcessTiles(1, 1);
     },
 
     /** 
@@ -899,18 +920,20 @@ OpenLayers.Layer.Grid = OpenLayers.Class(OpenLayers.Layer.HTTPRequest, {
     calculateGridLayout: function(bounds, origin, resolution) {
         var tilelon = resolution * this.tileSize.w;
         var tilelat = resolution * this.tileSize.h;
-        
+
         var offsetlon = bounds.left - origin.lon;
-        var tilecol = Math.floor(offsetlon/tilelon) - this.buffer;
-        
+        var tilecol = Math.floor(offsetlon / tilelon) - this.buffer;
+
         var rowSign = this.rowSign;
 
-        var offsetlat = rowSign * (origin.lat - bounds.top + tilelat);  
-        var tilerow = Math[~rowSign ? 'floor' : 'ceil'](offsetlat/tilelat) - this.buffer * rowSign;
-        
-        return { 
-          tilelon: tilelon, tilelat: tilelat,
-          startcol: tilecol, startrow: tilerow
+        var offsetlat = rowSign * (origin.lat - bounds.top + tilelat);
+        var tilerow = Math[~rowSign ? 'floor' : 'ceil'](offsetlat / tilelat) - this.buffer * rowSign;
+
+        return {
+            tilelon: tilelon,
+            tilelat: tilelat,
+            startcol: tilecol,
+            startrow: tilerow
         };
 
     },
@@ -984,14 +1007,14 @@ OpenLayers.Layer.Grid = OpenLayers.Class(OpenLayers.Layer.HTTPRequest, {
      * Parameters:
      * bounds - {<OpenLayers.Bounds>}
      */
-    initGriddedTiles:function(bounds) {
+    initGriddedTiles: function(bounds) {
         this.events.triggerEvent("retile");
 
         // work out mininum number of rows and columns; this is the number of
         // tiles required to cover the viewport plus at least one for panning
 
         var viewSize = this.map.getSize();
-        
+
         var origin = this.getTileOrigin();
         var resolution = this.map.getResolution(),
             serverResolution = this.getServerResolution(),
@@ -1001,17 +1024,17 @@ OpenLayers.Layer.Grid = OpenLayers.Class(OpenLayers.Layer.HTTPRequest, {
                 h: this.tileSize.h / ratio
             };
 
-        var minRows = Math.ceil(viewSize.h/tileSize.h) + 
-                      2 * this.buffer + 1;
-        var minCols = Math.ceil(viewSize.w/tileSize.w) +
-                      2 * this.buffer + 1;
+        var minRows = Math.ceil(viewSize.h / tileSize.h) +
+            2 * this.buffer + 1;
+        var minCols = Math.ceil(viewSize.w / tileSize.w) +
+            2 * this.buffer + 1;
 
         var tileLayout = this.calculateGridLayout(bounds, origin, serverResolution);
         this.gridLayout = tileLayout;
-        
+
         var tilelon = tileLayout.tilelon;
         var tilelat = tileLayout.tilelat;
-        
+
         var layerContainerDivLeft = this.map.layerContainerOriginPx.x;
         var layerContainerDivTop = this.map.layerContainerOriginPx.y;
 
@@ -1022,7 +1045,8 @@ OpenLayers.Layer.Grid = OpenLayers.Class(OpenLayers.Layer.HTTPRequest, {
         startPx.x = Math.round(startPx.x) - layerContainerDivLeft;
         startPx.y = Math.round(startPx.y) - layerContainerDivTop;
 
-        var tileData = [], center = this.map.getCenter();
+        var tileData = [],
+            center = this.map.getCenter();
 
         var rowidx = 0;
         do {
@@ -1031,7 +1055,7 @@ OpenLayers.Layer.Grid = OpenLayers.Class(OpenLayers.Layer.HTTPRequest, {
                 row = [];
                 this.grid.push(row);
             }
-            
+
             var colidx = 0;
             do {
                 tileBounds = this.getTileBoundsForGridIndex(rowidx, colidx);
@@ -1052,15 +1076,13 @@ OpenLayers.Layer.Grid = OpenLayers.Class(OpenLayers.Layer.HTTPRequest, {
                     distance: Math.pow(tileCenter.lon - center.lon, 2) +
                         Math.pow(tileCenter.lat - center.lat, 2)
                 });
-     
+
                 colidx += 1;
-            } while ((tileBounds.right <= bounds.right + tilelon * this.buffer)
-                     || colidx < minCols);
-             
+            } while ((tileBounds.right <= bounds.right + tilelon * this.buffer) || colidx < minCols);
+
             rowidx += 1;
-        } while((tileBounds.bottom >= bounds.bottom - tilelat * this.buffer)
-                || rowidx < minRows);
-        
+        } while ((tileBounds.bottom >= bounds.bottom - tilelat * this.buffer) || rowidx < minRows);
+
         //shave off excess rows and columns
         this.removeExcessTiles(rowidx, colidx);
 
@@ -1070,9 +1092,9 @@ OpenLayers.Layer.Grid = OpenLayers.Class(OpenLayers.Layer.HTTPRequest, {
 
         //now actually draw the tiles
         tileData.sort(function(a, b) {
-            return a.distance - b.distance; 
+            return a.distance - b.distance;
         });
-        for (var i=0, ii=tileData.length; i<ii; ++i) {
+        for (var i = 0, ii = tileData.length; i < ii; ++i) {
             tileData[i].tile.draw();
         }
     },
@@ -1104,10 +1126,10 @@ OpenLayers.Layer.Grid = OpenLayers.Class(OpenLayers.Layer.HTTPRequest, {
         var tile = new this.tileClass(
             this, position, bounds, null, this.tileSize, this.tileOptions
         );
-        this.events.triggerEvent("addtile", {tile: tile});
+        this.events.triggerEvent("addtile", { tile: tile });
         return tile;
     },
-    
+
     /** 
      * Method: addTileMonitoringHooks
      * This function takes a tile as input and adds the appropriate hooks to 
@@ -1117,7 +1139,7 @@ OpenLayers.Layer.Grid = OpenLayers.Class(OpenLayers.Layer.HTTPRequest, {
      * tile - {<OpenLayers.Tile>}
      */
     addTileMonitoringHooks: function(tile) {
-        
+
         var replacingCls = 'olTileReplacing';
 
         tile.onLoadStart = function() {
@@ -1126,13 +1148,13 @@ OpenLayers.Layer.Grid = OpenLayers.Class(OpenLayers.Layer.HTTPRequest, {
                 this.loading = true;
                 this.events.triggerEvent("loadstart");
             }
-            this.events.triggerEvent("tileloadstart", {tile: tile});
+            this.events.triggerEvent("tileloadstart", { tile: tile });
             this.numLoadingTiles++;
             if (!this.singleTile && this.backBuffer && this.gridResolution === this.backBufferResolution) {
                 OpenLayers.Element.addClass(tile.getTile(), replacingCls);
             }
         };
-      
+
         tile.onLoadEnd = function(evt) {
             this.numLoadingTiles--;
             var aborted = evt.type === 'unload';
@@ -1161,7 +1183,7 @@ OpenLayers.Layer.Grid = OpenLayers.Class(OpenLayers.Layer.HTTPRequest, {
                         this._transitionElement = aborted ?
                             this.div.lastChild : tile.imgDiv;
                         var transitionendEvents = this.transitionendEvents;
-                        for (var i=transitionendEvents.length-1; i>=0; --i) {
+                        for (var i = transitionendEvents.length - 1; i >= 0; --i) {
                             OpenLayers.Event.observe(this._transitionElement,
                                 transitionendEvents[i],
                                 this._removeBackBuffer);
@@ -1177,11 +1199,11 @@ OpenLayers.Layer.Grid = OpenLayers.Class(OpenLayers.Layer.HTTPRequest, {
                 this.events.triggerEvent("loadend");
             }
         };
-        
+
         tile.onLoadError = function() {
-            this.events.triggerEvent("tileerror", {tile: tile});
+            this.events.triggerEvent("tileerror", { tile: tile });
         };
-        
+
         tile.events.on({
             "loadstart": tile.onLoadStart,
             "loadend": tile.onLoadEnd,
@@ -1209,13 +1231,13 @@ OpenLayers.Layer.Grid = OpenLayers.Class(OpenLayers.Layer.HTTPRequest, {
             scope: this
         });
     },
-    
+
     /**
      * Method: moveGriddedTiles
      */
     moveGriddedTiles: function() {
         var buffer = this.buffer + 1;
-        while(true) {
+        while (true) {
             var tlTile = this.grid[0][0];
             var tlViewPort = {
                 x: tlTile.position.x +
@@ -1261,7 +1283,7 @@ OpenLayers.Layer.Grid = OpenLayers.Class(OpenLayers.Layer.HTTPRequest, {
 
         var modelRow = grid[rowIndex];
         var row = grid[prepend ? 'pop' : 'shift']();
-        for (var i=0, len=row.length; i<len; i++) {
+        for (var i = 0, len = row.length; i < len; i++) {
             var tile = row[i];
             var position = modelRow[i].position.clone();
             position.y += tileSize.h * sign;
@@ -1286,10 +1308,10 @@ OpenLayers.Layer.Grid = OpenLayers.Class(OpenLayers.Layer.HTTPRequest, {
         var tileLayout = this.gridLayout;
         tileLayout.startcol += sign;
 
-        for (var i=0, len=grid.length; i<len; i++) {
+        for (var i = 0, len = grid.length; i < len; i++) {
             var row = grid[i];
             var position = row[colIndex].position.clone();
-            var tile = row[prepend ? 'pop' : 'shift']();            
+            var tile = row[prepend ? 'pop' : 'shift']();
             position.x += tileSize.w * sign;
             tile.moveTo(this.getTileBoundsForGridIndex(i, colIndex), position);
             row[prepend ? 'unshift' : 'push'](tile);
@@ -1307,18 +1329,18 @@ OpenLayers.Layer.Grid = OpenLayers.Class(OpenLayers.Layer.HTTPRequest, {
      */
     removeExcessTiles: function(rows, columns) {
         var i, l;
-        
+
         // remove extra rows
         while (this.grid.length > rows) {
             var row = this.grid.pop();
-            for (i=0, l=row.length; i<l; i++) {
+            for (i = 0, l = row.length; i < l; i++) {
                 var tile = row[i];
                 this.destroyTile(tile);
             }
         }
-        
+
         // remove extra columns
-        for (i=0, l=this.grid.length; i<l; i++) {
+        for (i = 0, l = this.grid.length; i < l; i++) {
             while (this.grid[i].length > columns) {
                 var row = this.grid[i];
                 var tile = row.pop();
@@ -1338,7 +1360,7 @@ OpenLayers.Layer.Grid = OpenLayers.Class(OpenLayers.Layer.HTTPRequest, {
             this.setTileSize();
         }
     },
-    
+
     /**
      * APIMethod: getTileBounds
      * Returns The tile bounds for a layer given a pixel location.
@@ -1356,16 +1378,16 @@ OpenLayers.Layer.Grid = OpenLayers.Class(OpenLayers.Layer.HTTPRequest, {
         var tileMapHeight = resolution * this.tileSize.h;
         var mapPoint = this.getLonLatFromViewPortPx(viewPortPx);
         var tileLeft = maxExtent.left + (tileMapWidth *
-                                         Math.floor((mapPoint.lon -
-                                                     maxExtent.left) /
-                                                    tileMapWidth));
+            Math.floor((mapPoint.lon -
+                    maxExtent.left) /
+                tileMapWidth));
         var tileBottom = maxExtent.bottom + (tileMapHeight *
-                                             Math.floor((mapPoint.lat -
-                                                         maxExtent.bottom) /
-                                                        tileMapHeight));
+            Math.floor((mapPoint.lat -
+                    maxExtent.bottom) /
+                tileMapHeight));
         return new OpenLayers.Bounds(tileLeft, tileBottom,
-                                     tileLeft + tileMapWidth,
-                                     tileBottom + tileMapHeight);
+            tileLeft + tileMapWidth,
+            tileBottom + tileMapHeight);
     },
 
     CLASS_NAME: "OpenLayers.Layer.Grid"
