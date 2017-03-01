@@ -1,4 +1,4 @@
-/* Copyright (c) 2006-2013 by OpenLayers Contributors (see authors.txt for
+/* Copyright (c) 2006-2015 by OpenLayers Contributors (see authors.txt for
  * full list of contributors). Published under the 2-clause BSD license.
  * See license.txt in the OpenLayers distribution or repository for the
  * full text of the license. */
@@ -18,7 +18,7 @@
  *  - <OpenLayers.Layer.HTTPRequest>
  */
 OpenLayers.Layer.Grid = OpenLayers.Class(OpenLayers.Layer.HTTPRequest, {
-
+    
     /**
      * APIProperty: tileSize
      * {<OpenLayers.Size>}
@@ -27,14 +27,14 @@ OpenLayers.Layer.Grid = OpenLayers.Class(OpenLayers.Layer.HTTPRequest, {
 
     /**
      * Property: tileOriginCorner
-     * {String} If the <tileOrigin> property is not provided, the tile origin
-     *     will be derived from the layer's <maxExtent>.  The corner of the
+     * {String} If the <tileOrigin> property is not provided, the tile origin 
+     *     will be derived from the layer's <maxExtent>.  The corner of the 
      *     <maxExtent> used is determined by this property.  Acceptable values
      *     are "tl" (top left), "tr" (top right), "bl" (bottom left), and "br"
      *     (bottom right).  Default is "bl".
      */
     tileOriginCorner: "bl",
-
+    
     /**
      * APIProperty: tileOrigin
      * {<OpenLayers.LonLat>} Optional origin for aligning the grid of tiles.
@@ -44,7 +44,7 @@ OpenLayers.Layer.Grid = OpenLayers.Class(OpenLayers.Layer.HTTPRequest, {
      *     <maxExtent>.  Default is ``null``.
      */
     tileOrigin: null,
-
+    
     /** APIProperty: tileOptions
      *  {Object} optional configuration options for <OpenLayers.Tile> instances
      *  created by this Layer, if supported by the tile class.
@@ -57,25 +57,25 @@ OpenLayers.Layer.Grid = OpenLayers.Class(OpenLayers.Layer.HTTPRequest, {
      *     Defaults is OpenLayers.Tile.Image.
      */
     tileClass: OpenLayers.Tile.Image,
-
+    
     /**
      * Property: grid
-     * {Array(Array(<OpenLayers.Tile>))} This is an array of rows, each row is
+     * {Array(Array(<OpenLayers.Tile>))} This is an array of rows, each row is 
      *     an array of tiles.
      */
     grid: null,
 
     /**
      * APIProperty: singleTile
-     * {Boolean} Moves the layer into single-tile mode, meaning that one tile
+     * {Boolean} Moves the layer into single-tile mode, meaning that one tile 
      *     will be loaded. The tile's size will be determined by the 'ratio'
-     *     property. When the tile is dragged such that it does not cover the
+     *     property. When the tile is dragged such that it does not cover the 
      *     entire viewport, it is reloaded.
      */
     singleTile: false,
 
     /** APIProperty: ratio
-     *  {Float} Used only when in single-tile mode, this specifies the
+     *  {Float} Used only when in single-tile mode, this specifies the 
      *          ratio of the size of the single tile to the size of the map.
      *          Default value is 1.5.
      */
@@ -83,19 +83,19 @@ OpenLayers.Layer.Grid = OpenLayers.Class(OpenLayers.Layer.HTTPRequest, {
 
     /**
      * APIProperty: buffer
-     * {Integer} Used only when in gridded mode, this specifies the number of
-     *           extra rows and colums of tiles on each side which will
+     * {Integer} Used only when in gridded mode, this specifies the number of 
+     *           extra rows and columns of tiles on each side which will
      *           surround the minimum grid tiles to cover the map.
      *           For very slow loading layers, a larger value may increase
      *           performance somewhat when dragging, but will increase bandwidth
-     *           use significantly.
+     *           use significantly. 
      */
     buffer: 0,
 
     /**
      * APIProperty: transitionEffect
      * {String} The transition effect to use when the map is zoomed.
-     * Two posible values:
+     * Two possible values:
      *
      * "resize" - Existing tiles are resized on zoom to provide a visual
      *     effect of the zoom having taken place immediately.  As the
@@ -105,7 +105,7 @@ OpenLayers.Layer.Grid = OpenLayers.Class(OpenLayers.Layer.HTTPRequest, {
      *     base layer.  New tiles for the base layer will cover existing tiles.
      *     This setting is recommended when having an overlay duplicated during
      *     the transition is undesirable (e.g. street labels or big transparent
-     *     fills).
+     *     fills). 
      * null - No transition effect.
      *
      * Using "resize" on non-opaque layers can cause undesired visual
@@ -131,7 +131,7 @@ OpenLayers.Layer.Grid = OpenLayers.Class(OpenLayers.Layer.HTTPRequest, {
      * {Boolean} Indicates if tiles are being loaded.
      */
     loading: false,
-
+    
     /**
      * Property: backBuffer
      * {DOMElement} The back buffer.
@@ -212,7 +212,7 @@ OpenLayers.Layer.Grid = OpenLayers.Class(OpenLayers.Layer.HTTPRequest, {
      *     should not be zero.
      */
     className: null,
-
+    
     /**
      * Register a listener for a particular event with the following syntax:
      * (code)
@@ -253,7 +253,7 @@ OpenLayers.Layer.Grid = OpenLayers.Class(OpenLayers.Layer.HTTPRequest, {
      * startrow
      */
     gridLayout: null,
-
+    
     /**
      * Property: rowSign
      * {Number} 1 for grids starting at the top, -1 for grids starting at the
@@ -261,7 +261,7 @@ OpenLayers.Layer.Grid = OpenLayers.Class(OpenLayers.Layer.HTTPRequest, {
      */
     rowSign: null,
 
-    isChina: true,
+    isChina:true,
     images: {},
 
     /**
