@@ -10,7 +10,9 @@ OpenLayers.Layer.Baidu = OpenLayers.Class(OpenLayers.Layer.TileCache, {
     labelCount: 0,
     iconCache: {},
     isIphone: true,
-    iconURLs: ["//mapor0.bdimg.com/sty/vpl_icons/", "//mapor0.bdimg.com/sty/vpl_icons/"],
+    trafficInterval: 300000,
+    trafficTimeStamp: 0,
+    iconURLs: ['/mobile/dist/baiduImg/'],//["//mapor0.bdimg.com/sty/vpl_icons/", "//mapor0.bdimg.com/sty/vpl_icons/"],
     initialize: function(name, url, options) {
         var tempoptions = OpenLayers.Util.extend({
             'format': 'image/png',
@@ -43,11 +45,15 @@ OpenLayers.Layer.Baidu = OpenLayers.Class(OpenLayers.Layer.TileCache, {
         if (!this.isVectorLayer) {
             return;
         }
+        map.viewPortDiv.style.backgroundColor = 'rgb(245, 243, 240)'
         map.events.register("moveend", this, function(opt) {
             if (this.currentZoom != this.map.getZoom()) {
                 this.clearLabel();
                 this.currentZoom = this.map.getZoom();
             }
+
+            this.moveGriddedTiles(true);
+
         });
         map.config = {
             trafficStatus: false
@@ -95,7 +101,7 @@ OpenLayers.Layer.Baidu = OpenLayers.Class(OpenLayers.Layer.TileCache, {
 
         var tilez = this.map.zoom - 1;
         var res = this.map.getResolution();
-        // var bbox = this.map.getMaxExtent();
+
         var size = this.tileSize;
         var bx = Math.round((bounds.left - this.tileOrigin.lon) / (res * size.w));
         var by = Math.round((bounds.bottom - this.tileOrigin.lat) / (res * size.h)) + (isRemove ? 0 : 0);
@@ -111,6 +117,14 @@ OpenLayers.Layer.Baidu = OpenLayers.Class(OpenLayers.Layer.TileCache, {
             'z': tilez
         });
     },
+    formatUrl: function(x, y, z) {
+        var urlsNum = Math.abs((x + y) % this.url.length);
+        return OpenLayers.String.format(this.url[urlsNum], {
+            'x': x,
+            'y': y,
+            'z': z
+        });
+    },
     clone: function(obj) {
         if (obj == null) {
             obj = new OpenLayers.Layer.Baidu(this.name, this.url, this.options);
@@ -118,14 +132,7 @@ OpenLayers.Layer.Baidu = OpenLayers.Class(OpenLayers.Layer.TileCache, {
         obj = OpenLayers.Layer.TileCache.prototype.clone.apply(this, [obj]);
         return obj;
     },
-    clearLabel: function() {
-        // var t = this.map,
-        //     e = t.getSize(),
-        //     a = e.width,
-        //     i = e.height,
-        //     r = this.ratio;
-        // this.labelCtx.clearRect(0, 0, a * r, i * r)
-
+    clearLabel: function() {       
         this.labelCanvas.getContext('2d').clearRect(0, 0, this.labelCanvas.width, this.labelCanvas.height);
     },
     drawIconAndText: function(t) {
@@ -285,6 +292,22 @@ OpenLayers.Layer.Baidu = OpenLayers.Class(OpenLayers.Layer.TileCache, {
         this.div.appendChild(canvas);
         return canvas;
     },
+    setTrafficOff: function() {
+        this.map.config.trafficStatus = false;
+        this.reDrawVectorMap();
+    },
+    setTrafficOn: function() {
+        this.map.config.trafficStatus = true;
+        this.reDrawVectorMap();
+    },
+    reDrawVectorMap: function() {
+        for (var i = 0; i < this.div.childNodes.length; i++) {
+            if (this.div.childNodes[i].id != "biaozhu") {
+                this.div.childNodes[i]._drawFinished = false;
+            }
+        }
+        this.moveGriddedTiles();
+    },
     getTilesInfo: function() {
         this.tilesInfo = [];
         var L = this.objInCanvas;
@@ -330,16 +353,14 @@ OpenLayers.Layer.Baidu = OpenLayers.Class(OpenLayers.Layer.TileCache, {
 
                 var tileCenter = tbound.getCenterLonLat();
                 imageDatas.push({
-                    // compleate: false,
-                    bounds: tbound,
-                    // npPosition: new OpenLayers.LonLat(left, top),
                     key: zoom + "_" + bx + "_" + by,
                     i: i,
-                    j: j,
-                    url: url,
+                    j: j,                    
                     zoom: zoom,
-                    postion: lt,
-                    //getURL: 'x=' + bx + '&y=' + by + '&z=' + zoom,
+                    postion: {
+                        x: lt.x,
+                        y: lt.y
+                    },
                     distance: Math.pow(tileCenter.lon - center.lon, 2) +
                         Math.pow(tileCenter.lat - center.lat, 2)
                 });
@@ -352,11 +373,11 @@ OpenLayers.Layer.Baidu = OpenLayers.Class(OpenLayers.Layer.TileCache, {
         var arrOutCanvas = [];
         for (var i = this.titlesCanvas.length - 1; i >= 0; i--) {
             this.titlesCanvas[i]._isInCurrentView = false;
-            this.titlesCanvas[i]._drawFinished = false;
+            //this.titlesCanvas[i]._drawFinished = false;
             for (var j = imageDatas.length - 1; j >= 0; j--) {
                 if (this.titlesCanvas[i].id == imageDatas[j].key) {
                     this.titlesCanvas[i]._isInCurrentView = true;
-                    this.titlesCanvas[i]._drawFinished = true;
+                 //   this.titlesCanvas[i]._drawFinished = true;
                     this.objInCanvas[this.titlesCanvas[i].id] = this.titlesCanvas[i];
                     break;
                 }
@@ -365,7 +386,7 @@ OpenLayers.Layer.Baidu = OpenLayers.Class(OpenLayers.Layer.TileCache, {
 
         for (var i = this.titlesCanvas.length - 1; i >= 0; i--) {
             var Y = this.titlesCanvas[i];
-            Y._isInCurrentView || (Y._vtd = null,
+            Y._isInCurrentView || (Y._vtd = null, Y.image = null, delete Y.image,
                 delete Y._vtd,
                 Y._drawFinished = !1,
                 arrOutCanvas.push(Y))
@@ -421,6 +442,9 @@ OpenLayers.Layer.Baidu = OpenLayers.Class(OpenLayers.Layer.TileCache, {
     },
     loadData: function(tile, zoom) {
         tile._drawFinished = false;
+        if(!tile.image){
+            return;
+        }
         var g = "_" + parseInt(tile.image.j + "" + tile.image.i).toString(36);
         var that = {
             image: tile.image,
@@ -432,7 +456,7 @@ OpenLayers.Layer.Baidu = OpenLayers.Class(OpenLayers.Layer.TileCache, {
             if (z == zoom) {
                 var f = r,
                     s = that.layer,
-                    v = that.layer.trafficStatus;
+                    v = s.map.config.trafficStatus;
 
                 content = that.canvas.getContext('2d');
 
@@ -450,11 +474,17 @@ OpenLayers.Layer.Baidu = OpenLayers.Class(OpenLayers.Layer.TileCache, {
                 delete window[g]
             }
         };
-
-        this.request(tile.image.url + "&fn=window." + g)
+        var w = this.map.config.trafficStatus ? "&trafficstamp=" + this.trafficTimeStamp + "&" : "&";
+        this.request(this.formatUrl(tile.image.i, tile.image.j, tile.image.zoom) + w + "fn=window." + g)
     },
     moveGriddedTiles: function(isClear) {
-
+        if(!this.isVectorLayer){
+            OpenLayers.Layer.Grid.prototype.moveGriddedTiles.call(this);
+            return;
+        }
+        if(!isClear){
+            return;
+        }
         this.labelCount = 0;
         this.isLabelTimeout = !1;
         this.curViewLabels = [];
@@ -466,6 +496,9 @@ OpenLayers.Layer.Baidu = OpenLayers.Class(OpenLayers.Layer.TileCache, {
             return;
         }
 
+        var t = this;
+        var s = (new Date).getTime();
+        s - t.trafficTimeStamp >= t.trafficInterval && (t.trafficTimeStamp = s);
 
         this.labelCount = tiles.length;
         for (var i = 0, ii = tiles.length; i < ii; ++i) {
@@ -477,7 +510,7 @@ OpenLayers.Layer.Baidu = OpenLayers.Class(OpenLayers.Layer.TileCache, {
             that.labelCount = 0;
             that.isLabelTimeout = !1;
             that.updateLabel();
-        }, 2000);
+        }, 1000);
     },
     drawBackGround: function(t, e, a, i, r, n) {
         var s = this,

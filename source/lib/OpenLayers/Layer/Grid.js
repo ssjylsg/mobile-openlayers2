@@ -525,7 +525,7 @@ OpenLayers.Layer.Grid = OpenLayers.Class(OpenLayers.Layer.HTTPRequest, {
                         if (this.clearImages) {
                             this.clearImages();
                         }                      
-                        this.moveGriddedTiles(true);
+                        this.moveGriddedTiles();
                     } else {
                         this.initGriddedTiles(bounds);
                     }
