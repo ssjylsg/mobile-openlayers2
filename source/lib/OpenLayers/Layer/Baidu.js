@@ -12,7 +12,7 @@ OpenLayers.Layer.Baidu = OpenLayers.Class(OpenLayers.Layer.TileCache, {
     isIphone: true,
     trafficInterval: 300000,
     trafficTimeStamp: 0,
-    iconURLs: ['/mobile/dist/baiduImg/'],//["//mapor0.bdimg.com/sty/vpl_icons/", "//mapor0.bdimg.com/sty/vpl_icons/"],
+    iconURLs: ['/mobile/dist/baiduImg/'], //["//mapor0.bdimg.com/sty/vpl_icons/", "//mapor0.bdimg.com/sty/vpl_icons/"],
     initialize: function(name, url, options) {
         var tempoptions = OpenLayers.Util.extend({
             'format': 'image/png',
@@ -132,7 +132,7 @@ OpenLayers.Layer.Baidu = OpenLayers.Class(OpenLayers.Layer.TileCache, {
         obj = OpenLayers.Layer.TileCache.prototype.clone.apply(this, [obj]);
         return obj;
     },
-    clearLabel: function() {       
+    clearLabel: function() {
         this.labelCanvas.getContext('2d').clearRect(0, 0, this.labelCanvas.width, this.labelCanvas.height);
     },
     drawIconAndText: function(t) {
@@ -306,7 +306,7 @@ OpenLayers.Layer.Baidu = OpenLayers.Class(OpenLayers.Layer.TileCache, {
                 this.div.childNodes[i]._drawFinished = false;
             }
         }
-        this.moveGriddedTiles();
+        this.moveGriddedTiles(true);
     },
     getTilesInfo: function() {
         this.tilesInfo = [];
@@ -355,7 +355,7 @@ OpenLayers.Layer.Baidu = OpenLayers.Class(OpenLayers.Layer.TileCache, {
                 imageDatas.push({
                     key: zoom + "_" + bx + "_" + by,
                     i: i,
-                    j: j,                    
+                    j: j,
                     zoom: zoom,
                     postion: {
                         x: lt.x,
@@ -373,11 +373,11 @@ OpenLayers.Layer.Baidu = OpenLayers.Class(OpenLayers.Layer.TileCache, {
         var arrOutCanvas = [];
         for (var i = this.titlesCanvas.length - 1; i >= 0; i--) {
             this.titlesCanvas[i]._isInCurrentView = false;
-            //this.titlesCanvas[i]._drawFinished = false;
+
             for (var j = imageDatas.length - 1; j >= 0; j--) {
                 if (this.titlesCanvas[i].id == imageDatas[j].key) {
                     this.titlesCanvas[i]._isInCurrentView = true;
-                 //   this.titlesCanvas[i]._drawFinished = true;
+                    //   this.titlesCanvas[i]._drawFinished = true;
                     this.objInCanvas[this.titlesCanvas[i].id] = this.titlesCanvas[i];
                     break;
                 }
@@ -422,10 +422,6 @@ OpenLayers.Layer.Baidu = OpenLayers.Class(OpenLayers.Layer.TileCache, {
         for (var i = arrOutCanvas.length - 1; i >= 0; i--) {
             arrOutCanvas[i].style.visibility = "hidden";
         }
-        // if (this.tilesInfo.length > 0) {
-        //     console.log(this.tilesInfo.length);
-        // }
-
         return this.tilesInfo;
     },
     request: function(e) {
@@ -442,10 +438,10 @@ OpenLayers.Layer.Baidu = OpenLayers.Class(OpenLayers.Layer.TileCache, {
     },
     loadData: function(tile, zoom) {
         tile._drawFinished = false;
-        if(!tile.image){
+        if (!tile.image) {
             return;
         }
-        var g = "_" + parseInt(tile.image.j + "" + tile.image.i).toString(36);
+        var g = "_" + parseInt(tile.image.i + "" + tile.image.j).toString(36);
         var that = {
             image: tile.image,
             layer: this,
@@ -478,11 +474,11 @@ OpenLayers.Layer.Baidu = OpenLayers.Class(OpenLayers.Layer.TileCache, {
         this.request(this.formatUrl(tile.image.i, tile.image.j, tile.image.zoom) + w + "fn=window." + g)
     },
     moveGriddedTiles: function(isClear) {
-        if(!this.isVectorLayer){
+        if (!this.isVectorLayer) {
             OpenLayers.Layer.Grid.prototype.moveGriddedTiles.call(this);
             return;
         }
-        if(!isClear){
+        if (!isClear) {
             return;
         }
         this.labelCount = 0;
