@@ -37,7 +37,7 @@
     #viewerContainer {
         width: 100%;
         position: absolute;
-        height: 100%;
+       View: height: 100%;
     }
     </style>
 </head>
@@ -62,10 +62,12 @@
             <div class="icon"> <span class="success">        </span> </div>
         </div>
     </div>
+    <script src="featureStyle.js"></script>
+    <script src="iconSetInfo_high.js"></script>
     <script src="jquery.js"></script>
-    <script src="OpenLayers.js"></script>
-    <script src="NPMobileMap.js"></script>
-    <script src="../measure.js"></script>
+    <script src="../source/lib/OpenLayers.js"></script>
+    <script src="../NPMobileMap.js"></script>
+   <!--  <script src="../measure.js"></script> -->
     <script src="WebViewJavascriptBridge.js"></script>
     <script type="text/javascript">
     function connectWebViewJavascriptBridge(callback) {
@@ -179,6 +181,7 @@
     function createMap() {
         $.getJSON('mapConfig.json', function(json, textStatus) {
             map = new NPMobile.Map(viewerContainer, json);
+            return;
             tool = new NPMobile.Tool.Measure(map);
             /////////**************** Marker************************************
 
