@@ -125,6 +125,7 @@ gulp.task('minifyjs', function() {
         'OpenLayers/Layer/TDTLayer.js',
         'OpenLayers/Layer/TMS_PGIS.js',
         'OpenLayers/Layer/ArcGISCache.js',
+        'OpenLayers/Layer/QQMapLayer.js',
         "OpenLayers/Events/featureclick.js",
         'OpenLayers/Strategy/Cluster.js',
         'OpenLayers/Strategy/AnimatedCluster.js',

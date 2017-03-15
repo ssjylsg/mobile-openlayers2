@@ -1,6 +1,6 @@
 window.NPMobile = {
     ISPOINTCONVERT: true,
-    VERSION: '1.0.8',
+    VERSION: '1.1.0',
     inherits: function(childCtor, parentCtor) {
         var p = parentCtor.prototype;
         var c = childCtor.prototype;
@@ -576,7 +576,7 @@ NPMobile.Layers.ClusterLayer.prototype = {
      * @param {NPMobile.Geometry.ClusterMarker[]} markers 聚合Maker
      * @param {bool} isComplete 是否结束，默认false
      */
-    addOverlays: function(markers, isComplete) {        
+    addOverlays: function(markers, isComplete) {
         for (var i = 0; i < markers.length; i++) {
             if (!this._layer.showMarker[markers[i].markType]) {
                 this._layer.showMarker[markers[i].markType] = true;
@@ -588,7 +588,7 @@ NPMobile.Layers.ClusterLayer.prototype = {
             this._layer.events.triggerEvent("beforefeaturesadded", {
                 features: this._markers.slice()
             });
-           // this._markers = [];
+            // this._markers = [];
         }
 
     },
@@ -787,8 +787,8 @@ NPMobile.Map = function(mapContainer, mapInfo) {
     //     }
     // });
     var that = this;
-    var vector = new OpenLayers.Layer.Vector("Vector Layer", {});
-    this._map.addLayer(vector);
+    // var vector = new OpenLayers.Layer.Vector("Vector Layer", {});
+    // this._map.addLayer(vector);
     // geolocate.events.register("locationfailed", this, function(e) {
     //     console.error(e.error.message);
     // });
@@ -929,6 +929,20 @@ NPMobile.Map.prototype = {
     //     }
     //     //console.log(result);
     // },
+    /**
+     * 设置百度地图流量监控图层是否可见
+     * @param {Boolean} isVisable  
+     */
+    setBaiduTrafficLayerVisable: function(isVisable) {
+        if (this._mapJson.vectorLayer.length == 2) {
+            for (var i = this._mapJson.vectorLayer.length - 1; i >= 0; i--) {
+                if (this._mapJson.vectorLayer[i].name === "trafficLayer") {
+                    this._mapJson.vectorLayer[i].setVisibility(isVisable);
+                    break;
+                }
+            }
+        }
+    },
     /**
      * 计算P0 到P1 的距离
      * @param  {NPMobile.Geometry.Point} p0  
@@ -1101,16 +1115,22 @@ NPMobile.Map.prototype = {
                         newLayer = new OpenLayers.Layer.TMS(url, self.name, self._opts);
                         break;
                     case "baidu":
+                    case "baiduVector":
                     case "NPMapLib.Layers.BaiduTileLayer":
                         url = url + "X=${x}&Y=${y}&L=${z}";
                         self._opts = {
                             centerPoint: self.centerPoint,
                             fullExtent: self.fullExtent,
-                            isBaseLayer: self.isBaseLayer,
+                            isBaseLayer: true,
                             tileOrigin: new OpenLayers.LonLat(0, 0),
-                            maxResolution: 262144
+                            maxResolution: 262144,
+                            isVectorLayer: self.isVectorLayer
                         };
-                        newLayer = new OpenLayers.Layer.Baidu(url, self.name, self._opts);
+                        if(layer.layerOpt.layerInfo.layerType === "baiduVector"){
+                            self._opts.isVectorLayer = true;
+                            url += "&format=jsonp";
+                        }
+                        newLayer = new OpenLayers.Layer.Baidu(layer.layerName,url, self._opts);
                         break;
                     case "streetmap":
                     case "NPMapLib.Layers.OSMLayer":
@@ -1128,6 +1148,9 @@ NPMobile.Map.prototype = {
                         self.maxResolution = 2;
                         newLayer = new OpenLayers.Layer.TMS_PGIS(url, self.name, self);
                         break;
+                    case "NPMapLib.Layers.QQMapLayer":
+                        newLayer = new OpenLayers.Layer.QQMap(url, self.name, self);
+                        break;
                     default:
                         break;
                 }
@@ -1143,12 +1166,23 @@ NPMobile.Map.prototype = {
                         newLayer = new OpenLayers.Layer.TDTLayer(layer.layerName, url, self);
                         break;
                     case 'NPMapLib.Layers.GaoDeLayer':
+
                         newLayer = new OpenLayers.Layer.gaode(layer.layerName, url, self);
-                        break;
+                        break;              
+                        
                     case 'NPMapLib.Layers.BaiduTileLayer':
                         self.tileOrigin = new OpenLayers.LonLat(0, 0);
                         self.maxResolution = 262144;
+                        if (self.isVectorLayer) {
+                            // 此处加载百度矢量地图样式JS文件
+
+                            // document.write('<script type="text/javascript" src="' + "featureStyle.js?v=" + (new Date().getTime() + "") + '"><\/script>');
+                            // document.write('<script type="text/javascript" src="' + "iconSetInfo_high.js?v=" + (new Date().getTime() + "") + '"><\/script>');
+                        }
                         newLayer = new OpenLayers.Layer.Baidu(layer.layerName, url, self);
+                        break;
+                    case "NPMapLib.Layers.QQMapLayer":
+                        newLayer = new OpenLayers.Layer.QQMap(layer.layerName, url, self);
                         break;
                     case 'NPMapLib.Layers.OSMLayer':
                         newLayer = new OpenLayers.Layer.OSM(layer.layerName, url, self);

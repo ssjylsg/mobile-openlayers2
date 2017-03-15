@@ -12,6 +12,7 @@ OpenLayers.Layer.Baidu = OpenLayers.Class(OpenLayers.Layer.TileCache, {
     isIphone: true,
     trafficInterval: 300000,
     trafficTimeStamp: 0,
+    onlineUrl:["http://mapor0.bdimg.com/pvd/?qt=tile&x=${x}&y=${y}&z=${z}&styles=pl&p=1&limit=80&v=088&udt=20170216"],
     iconURLs: ['/mobile/dist/baiduImg/'], //["//mapor0.bdimg.com/sty/vpl_icons/", "//mapor0.bdimg.com/sty/vpl_icons/"],
     initialize: function(name, url, options) {
         var tempoptions = OpenLayers.Util.extend({
@@ -34,6 +35,8 @@ OpenLayers.Layer.Baidu = OpenLayers.Class(OpenLayers.Layer.TileCache, {
         this.featureStyle = window.FeatureStyle;
         this.ratio = 2;
         this.iconSetInfoHigh = window.iconSetInfo_high;
+        var temp = OpenLayers._getScriptLocation() + 'baiduImg/';
+        this.iconURLs = [temp];
     },
     currentZoom: null,
     setMap: function(map) {
@@ -64,7 +67,7 @@ OpenLayers.Layer.Baidu = OpenLayers.Class(OpenLayers.Layer.TileCache, {
         var that = this;
         this.mapType = {
             getZoomUnits: function(t) {
-                var e = that._opts.maxZoom;
+                var e = 18;
                 return Math.pow(2, e - t)
             }
         }
@@ -454,7 +457,7 @@ OpenLayers.Layer.Baidu = OpenLayers.Class(OpenLayers.Layer.TileCache, {
                     s = that.layer,
                     v = s.map.config.trafficStatus;
 
-                content = that.canvas.getContext('2d');
+                content = that.canvas.getContext('2d');               
 
                 v && (f = r[0], f.trafficData = r[1]),
                     s.drawBackGround(f, that.canvas, that.image.i, that.image.j, that.image.zoom, s.map.getCenter());
