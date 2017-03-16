@@ -37,130 +37,76 @@
     #viewerContainer {
         width: 100%;
         position: absolute;
-       View: height: 100%;
+        height: 100%;
+    }
+    
+    .attr-list {
+        padding-left: 20px;
     }
     </style>
 </head>
 
 <body>
-    <div>
-        <div style="width:100%;height: 90px;display:none" id="mapConfig">
-            <!--  <input type="button" value="加载地图">
+    <div style="position: absolute;width: 100%;height: 100%">
+        <div style="float: right;width: 20%;height: 100%;padding-left: 20px;">
+            <div class="attr-list">
+                <h4>地图资源</h4>
+                <p>
+                    <input type="button" url='mapConfig_baidu.json' value="百度地图" event='createLocalMap'>
+                    <input type="button" url='mapConfig_gaode.json' value="高德地图" event='createLocalMap'>
+                    <input type="button" url='mapConfig_google.json' value="谷歌地图" event='createLocalMap'>
+                </p>
+            </div>
+            <div class="attr-list">
+                <h4>Marker 覆盖物</h4>
+                <p>
+                    <input type="button" value="新增Marker" event="createMarker"> </p>
+                <p>
+                    <input type="button" value="聚合" event="cluster"> </p>
+            </div>
+            <div class="attr-list">
+                <h4>其他</h4>
+                <p>
+                    <input type="button" value="计算两点距离" event="distance"> </p>
+                <p>
+                    <input type="button" value="百度路况" event="baidutrafficLayer"> </p>
+                <p>
+                    <input type="button" value="全图" event="fullExtent"> </p>
+                <p>
+                    <input type="button" value="获取地图中心点" event="getCenter"> </p>
+                <p>
+                    <input type="button" value="获取当前层级" event="getZoom"> </p>
+            </div>
+        </div>
+        <div style="position: absolute;float: right;width: 80%;height: 100%">
+            <div style="width:100%;height: 90px;display:none" id="mapConfig">
+                <!--  <input type="button" value="加载地图">
             <input type="button" value="普通Marker">
             <input type="button" value="聚合Marker"> -->
-            <input type="button" value="测距">
-            <input type="button" value="面积测量">
-            <br>
-            <textarea cols="150" rows="3"></textarea>
-            <input type="button" value="执行">
-        </div>
-        <div id="viewerContainer"></div>
-        <div id="iploc" class="ipLocCont BMap_noprint anchorBR" style="position: absolute; z-index: 10; bottom: 50px; right: 10px; top: auto; left: auto;display:none">
-            <div class="titleComm title hide">定位您的位置</div>
-            <div class="hide titleComm loading-button">定位中</div>
-            <div class="hide titleComm titleFailed">定位失败</div>
-            <div class="icon"> <span class="success">        </span> </div>
+                <input type="button" value="测距">
+                <input type="button" value="面积测量">
+                <br>
+                <textarea cols="150" rows="3"></textarea>
+                <input type="button" value="执行">
+            </div>
+            <div id="viewerContainer"></div>
+            <div id="iploc" class="ipLocCont BMap_noprint anchorBR" style="position: absolute; z-index: 10; bottom: 50px; right: 10px; top: auto; left: auto;width: 20px">
+                <!-- <div class="titleComm title hide">定位您的位置</div>
+                <div class="hide titleComm loading-button">定位中</div>
+                <div class="hide titleComm titleFailed">定位失败</div>
+                <div class="icon"> <span class="success">        </span> </div> -->
+                <div style="text-align: center;"><span><img method = '-' src="img/zoomin.png"></span></div>
+                <div style="text-align: center;"><span><img method = '+' src="img/zoomout.png"></span></div>
+            </div>
         </div>
     </div>
     <script src="featureStyle.js"></script>
     <script src="iconSetInfo_high.js"></script>
     <script src="jquery.js"></script>
-    <script src="../source/lib/OpenLayers.js"></script>
-    <script src="../NPMobileMap.js"></script>
-   <!--  <script src="../measure.js"></script> -->
+    <script src="OpenLayers.js"></script>
+    <script src="NPMobileMap.js"></script>
     <script src="WebViewJavascriptBridge.js"></script>
     <script type="text/javascript">
-    function connectWebViewJavascriptBridge(callback) {
-        if (window.WebViewJavascriptBridge) {
-            callback(WebViewJavascriptBridge)
-        } else {
-            document.addEventListener(
-                'WebViewJavascriptBridgeReady',
-                function() {
-                    callback(WebViewJavascriptBridge)
-                },
-                false
-            );
-        }
-    }
-
-    connectWebViewJavascriptBridge(function(bridge) {
-        bridge.registerHandler("NPMobileHelper.callMethod", function(data, responseCallback) {
-            responseCallback(NPMobileHelper.callMethod.apply(NPMobileHelper, data));
-        });
-    });
-    var jsCode = {
-        '加载地图': function() {
-            WebViewJavascriptBridge._handleMessageFromNative('{"callbackId":"JAVA_CB_1_384","handlerName":"NPMobileHelper.callMethod"}', {
-                "className": "NPMobile.Map",
-                "id": "693fa4f2-33f0-4e0b-a331-f9cbab06a47a",
-                "mapConfig": "http://192.168.61.28:807/mobile/dist//mapCONFIG.JSON",
-                "mapContainer": "viewerContainer"
-            }, "donothing");
-        },
-        '普通Marker': function() {
-            WebViewJavascriptBridge._handleMessageFromNative('{"callbackId":"JAVA_CB_1_384","handlerName":"NPMobileHelper.callMethod"}', {
-                "className": "NPMobile.Map",
-                "id": "693fa4f2-33f0-4e0b-a331-f9cbab06a47a",
-                "mapConfig": "http://192.168.61.28:807/mobile/dist//mapCONFIG.JSON",
-                "mapContainer": "viewerContainer"
-            }, 'addLayer', {
-                "className": "NPMobile.Layers.CustomerLayer",
-                "id": "3af23926-0de5-4f23-afc3-cda12fff7449",
-                "name": "测试"
-            });
-
-
-            javascript: WebViewJavascriptBridge._handleMessageFromNative('{"callbackId":"JAVA_CB_2_716","handlerName":"NPMobileHelper.callMethod"}', {
-                "className": "NPMobile.Layers.CustomerLayer",
-                "id": "3af23926-0de5-4f23-afc3-cda12fff7449",
-                "name": "测试"
-            }, 'addOverlay', {
-                "className": "NPMobile.Geometry.Marker",
-                "id": "360b6178-dbc5-4ebd-9bd2-e17fbad332fe",
-                "options": {
-                    "externalGraphic": "img/marker.png",
-                    "fontColor": "white",
-                    "fontSize": "14px",
-                    "graphicHeight": 25.0,
-                    "graphicWidth": 21.0,
-                    "graphicXOffset": -10.5,
-                    "graphicYOffset": -12.5,
-                    "labelAlign": "cm",
-                    "labelXOffset": 0.0,
-                    "labelYOffset": 0.0
-                },
-                "point": {
-                    "className": "NPMobile.Geometry.Point",
-                    "id": "830d07f9-15fd-4ce6-a662-a09f441e00c9",
-                    "lat": 39.871658488633386,
-                    "lon": 116.3129927000627
-                }
-            });
-
-        },
-        '聚合Marker': function() {
-
-        },
-        '测距': function() {
-            tool.setMode(NPMobile.Tool.MeasureMode.DISTANCE, function(area) {
-                console.log(area);
-            });
-        },
-        '面积测量': function() {
-            tool.setMode(NPMobile.Tool.MeasureMode.AREA, function(area) {
-                console.log(area);
-            });
-        }
-    };
-    $("input").click(function(event) {
-        if ($(this).val() === '执行') {
-            $("textarea").val() && eval($("textarea").val());
-        } else {
-            jsCode[$(this).val()]();
-        }
-
-    });
     var map;
     var fixSize = function() {
         window.scrollTo(0, 0);
@@ -177,14 +123,8 @@
     var map = null,
         tool,
         marker = null;
-
-    function createMap() {
-        $.getJSON('mapConfig.json', function(json, textStatus) {
-            map = new NPMobile.Map(viewerContainer, json);
-            return;
-            tool = new NPMobile.Tool.Measure(map);
-            /////////**************** Marker************************************
-
+    var demo = {
+        createMarker: function() {
             function createMarker(point, name, f) {
                 var layer = new NPMobile.Layers.CustomerLayer(name);
                 map.addLayer(layer);
@@ -201,15 +141,10 @@
             }
 
             createMarker(map.getCenter(), '自定义图层', function(argument) {
-                console.info('自定义图层');
+                window.alert('Marker');
             });
-            createMarker(new NPMobile.Geometry.Point(116.20125185107219,
-                39.681980092759595), '自定义图层1', function(argument) {
-                console.info('自定义图层1');
-            });
-
-
-
+        },
+        cluster: function() {
             /////////**************** 聚合************************************
             var c = map.getCenter(),
                 clusterLayer = new NPMobile.Layers.ClusterLayer('聚合', {
@@ -259,46 +194,61 @@
                 markers.push(new NPMobile.Geometry.ClusterMarker(new NPMobile.Geometry.Point(c.lon + Math.random() * Math.pow(-1, i) * 0.1, c.lat + Math.random() * Math.pow(-1, i + 1) * 0.1)));
             }
             clusterLayer.addOverlays(markers, true);
+        },
+        registerMapClick: function() {},
+        TrafficLayerVisable: true,
+        baidutrafficLayer: function() {
+            map.setBaiduTrafficLayerVisable(!this.TrafficLayerVisable);
+            this.TrafficLayerVisable = !this.TrafficLayerVisable;
+        },
+        distance: function() {
+            var r = map.distance(map.getCenter(), {
+                lon: 108.4032,
+                lat: 31.2565
+            });
+            this.showMsg(r);
+        },
+        showMsg: function(msg) {
+            msg && window.alert(msg);
+        },
+        fullExtent: function() {
+            map.fullExtent();
+        },
+        getCenter: function() {
+            var c = map.getCenter();
+            this.showMsg(c.lon + "," + c.lat);
+        },
+        getZoom: function() {
+            this.showMsg(map.getZoom());
+        },
+        createLocalMap: function(mapUrl) {
+            map && map.destroy();
+            createMap($(mapUrl).attr('url'));
+            this.TrafficLayerVisable = true;
+        }
+    }
 
-            /////////**************** 注册map click 事件************************************
-            // map.register('click', function(f) {
-            //     //window.alert('hellow');
-            //     map.createMarker(f, {
-            //         graphicWidth: 21,
-            //         graphicHeight: 25,
-            //         graphicXOffset: 0,
-            //         graphicYOffset: 0,
-            //         externalGraphic: 'img/marker.png',
-            //         graphicZIndex: 0,
-            //         graphicYOffset: -25 / 2,
-            //         graphicXOffset: -21 / 2
-            //     });
-            //     console.log(f)
-            // })
-
+    function createMap(mapConfig) {
+        $.getJSON(mapConfig || 'mapConfig.json', function(json, textStatus) {
+            map = new NPMobile.Map(viewerContainer, json);
         });
     }
 
     createMap();
-    //WPF = {};
-    NPMobile.callMethod = function(methodName, method) {
-        var args = Array.prototype.slice.call(arguments).slice(1);
-        if (typeof CSharpe != "undefined" && typeof CSharpe[methodName] != "undefined") {
-            return CSharpe[methodName].apply(this, args);
-        } else {
-            return window[methodName] && window[methodName].apply(this, args);
-        }
-    }
-    window.setInterval(function() {
-        //if (typeof CallFromJs != 'undefined') {
-        //(CallFromJs || CSharpe.CallFromJs)
-        NPMobile.callMethod('CallFromJs', new Date().getTime() + "");
-        //}
-    }, 5000);
 
-    function add(x, y) {
-        return x + y;
-    }
+    $(function() {
+        $('input').click(function() {
+            demo[$(this).attr('event')]($(this));
+        });
+
+        $("img", $("#iploc")).click(function() {
+            if ($(this).attr('method') == '-') {
+                map.setZoom(map.getZoom() - 1);
+            } else {
+                map.setZoom(map.getZoom() + 1);
+            }
+        });
+    })
     </script>
 </body>
 

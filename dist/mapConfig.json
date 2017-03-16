@@ -10,9 +10,9 @@
         "layerName": "shanghaiBaseMap1",
         "layerType": "NPMapLib.Layers.BaiduTileLayer",
         "layerOpt": {
-            "url": ["http://mapor1.bdimg.com/tile/?qt=tile&x=${x}&y=${y}&z=${z}&styles=pl&udt=20170101&scaler=1",
-                "http://mapor1.bdimg.com/tile/?qt=tile&x=${x}&y=${y}&z=${z}&styles=pl&udt=20170101&scaler=1",
-                "http://mapor0.bdimg.com/tile/?qt=tile&x=${x}&y=${y}&z=${z}&styles=pl&udt=20170101&scaler=1"
+            "url": ["http://mapor1.bdimg.com/tile/?qt=tile&x=${x}&y=${y}&z=${z}&styles=pl&udt=20170101&scaler=2",
+                "http://mapor1.bdimg.com/tile/?qt=tile&x=${x}&y=${y}&z=${z}&styles=pl&udt=20170101&scaler=2",
+                "http://mapor0.bdimg.com/tile/?qt=tile&x=${x}&y=${y}&z=${z}&styles=pl&udt=20170101&scaler=2"
             ],
             "isBaseLayer": true,
             "mapTyp": "EMap"
@@ -22,7 +22,7 @@
         "layerType": "NPMapLib.Layers.BaiduTileLayer",
         "layerOpt": {
             "url": [
-            	"http://its.map.baidu.com:8002/traffic/TrafficTileService?level=${z}&x=${x}&y=${y}&time=1486951723098&v=081&smallflow=1&scaler=1"
+            	"http://its.map.baidu.com:8002/traffic/TrafficTileService?level=${z}&x=${x}&y=${y}&time=1486951723098&v=081&smallflow=1&scaler=2"
                
             ],
             "isBaseLayer": false,
