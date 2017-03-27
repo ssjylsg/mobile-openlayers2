@@ -1,0 +1,32 @@
+{
+    "mapOpts": {
+        "minZoom": 12,
+        "defaultZoom": 14,
+        "maxZoom": 18,
+        "centerPoint": [108.93562933179427,34.26269607938686],
+        "restrictedExtent": [1.2043083245411E7, 4005954.8050574, 1.2219723245411E7, 4133186.8050574],
+        "projection": "EPSG:900913"
+    },
+    "vectorLayer": [{
+        "layerName": "shanghaiBaseMap1",
+        "layerType": "NPMapLib.Layers.BaiduTileLayer",
+        "layerOpt": {
+            "url": ["http://mapor0.bdimg.com/pvd/?qt=tile&x=${x}&y=${y}&z=${z}&styles=pl&p=1&limit=80&v=088&udt=20170216"
+            ],
+            "isBaseLayer": true,
+            "isVectorLayer":true
+        }
+    }, {
+        "layerName": "trafficLayer",
+        "layerType": "NPMapLib.Layers.BaiduTileLayer",
+        "layerOpt": {
+            "url": [
+                "http://its.map.baidu.com:8002/traffic/TrafficTileService?level=${z}&x=${x}&y=${y}&time=1486951723098&v=081&smallflow=1&scaler=2"
+               
+            ],
+            "isBaseLayer": false,
+            "mapTyp": "EMap"
+        }
+    }],
+    "sattilateLayer": []
+}

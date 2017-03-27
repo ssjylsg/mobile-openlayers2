@@ -1,0 +1,35 @@
+ {
+     "mapOpts": {
+         "minZoom": 0,
+         "defaultZoom": 6,
+         "maxZoom": 18,
+         "projection": "EPSG:900913",
+         "displayProjection": "EPSG:4326"
+     },
+     "vectorLayer": [{
+         "layerName": "shanghaiBaseMap1",
+         "layerType": "NPMapLib.Layers.GoogleMapTileLayer",
+         "layerOpt": {
+             "url": ["http://www.google.cn/maps/vt?pb=!1m5!1m4!1i${z}!2i${x}!3i${y}!4i256!2m3!1e0!2sm!3i373057330!3m11!2szh-Hans-CN!3sCN!5e78!12m1!1e47!12m3!1e37!2m1!1ssmartmaps!12m1!1e18!4e0!5m1!5f2&token=130258"],
+             "centerPoint": [116.39322, 39.91043],
+             "isBaseLayer": false
+         }
+     }, {
+         "layerName": "shanghaiBaseMap3",
+         "layerType": "NPMapLib.Layers.GoogleMapTileLayer",
+         "layerOpt": {
+             "url": ["http://www.google.cn/maps/vt?pb=!1m5!1m4!1i${z}!2i${x}!3i${y}!4i256!2m3!1e0!2sm!3i373056538!3m11!2szh-Hans-CN!3sCN!5e78!12m1!1e47!12m3!1e37!2m1!1ssmartmaps!12m1!1e3!4e0&token=107163"],
+             "centerPoint": [116.39322, 39.91043],
+             "isBaseLayer": true
+         }
+     }],
+     "sattilateLayer": [{
+         "layerName": "shanghaiBaseMap2",
+         "layerType": "NPMapLib.Layers.GoogleMapTileLayer",
+         "layerOpt": {
+             "url": ["http://www.google.cn/maps/vt?lyrs=s@707&gl=cn&x=${x}&y=${y}&z=${z}"],
+             "centerPoint": [116.39322, 39.91043],
+             "isBaseLayer": true
+         }
+     }]
+ }
