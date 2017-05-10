@@ -1,4 +1,4 @@
-/* Copyright (c) 2006-2015 by OpenLayers Contributors (see authors.txt for
+/* Copyright (c) 2006-2013 by OpenLayers Contributors (see authors.txt for
  * full list of contributors). Published under the 2-clause BSD license.
  * See license.txt in the OpenLayers distribution or repository for the
  * full text of the license. */
@@ -244,7 +244,7 @@ OpenLayers.Renderer.SVG = OpenLayers.Class(OpenLayers.Renderer.Elements, {
         if (title) {
             node.setAttributeNS(null, "title", title);
             //Standards-conformant SVG
-            // Prevent duplicate nodes. See issue https://github.com/openlayers/ol2/issues/92 
+            // Prevent duplicate nodes. See issue https://github.com/openlayers/openlayers/issues/92 
             var titleNode = node.getElementsByTagName("title");
             if (titleNode.length > 0) {
                 titleNode[0].firstChild.textContent = title;

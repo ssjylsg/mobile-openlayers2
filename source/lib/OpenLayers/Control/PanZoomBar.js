@@ -1,4 +1,4 @@
-/* Copyright (c) 2006-2015 by OpenLayers Contributors (see authors.txt for
+/* Copyright (c) 2006-2013 by OpenLayers Contributors (see authors.txt for
  * full list of contributors). Published under the 2-clause BSD license.
  * See license.txt in the OpenLayers distribution or repository for the
  * full text of the license. */
@@ -117,11 +117,6 @@ OpenLayers.Control.PanZoomBar = OpenLayers.Class(OpenLayers.Control.PanZoom, {
      */
     setMap: function(map) {
         OpenLayers.Control.PanZoom.prototype.setMap.apply(this, arguments);
-        
-        if (this.outsideViewport) {
-            this.events.attachToElement(this.div);
-        }
-
         this.map.events.on({
             "changebaselayer": this.redraw,
             "updatesize": this.redraw,
@@ -164,16 +159,16 @@ OpenLayers.Control.PanZoomBar = OpenLayers.Class(OpenLayers.Control.PanZoom, {
                 centered = new OpenLayers.Pixel(px.x+sz.w, px.y);
             }
 
-            this._addButton("panup", "north-mini.png", centered, sz);
+            this._addButton("panup", "north-mini.png", centered.add(0, sz.h-4), sz);
             px.y = centered.y+sz.h;
-            this._addButton("panleft", "west-mini.png", px, sz);
+            this._addButton("panleft", "west-mini.png", px.add(wposition-14, 1), sz);
             if (this.zoomWorldIcon) {
                 this._addButton("zoomworld", "zoom-world-mini.png", px.add(sz.w, 0), sz);
 
                 wposition *= 2;
             }
-            this._addButton("panright", "east-mini.png", px.add(wposition, 0), sz);
-            this._addButton("pandown", "south-mini.png", centered.add(0, sz.h*2), sz);
+            this._addButton("panright", "east-mini.png", px.add(wposition-4, 2), sz);
+            this._addButton("pandown", "south-mini.png", centered.add(0, sz.h*2-11), sz);
             this._addButton("zoomin", "zoom-plus-mini.png", centered.add(0, sz.h*3+5), sz);
             centered = this._addZoomBar(centered.add(0, sz.h*4 + 5));
             this._addButton("zoomout", "zoom-minus-mini.png", centered, sz);
@@ -321,14 +316,12 @@ OpenLayers.Control.PanZoomBar = OpenLayers.Class(OpenLayers.Control.PanZoom, {
         if (!OpenLayers.Event.isLeftClick(evt) && !OpenLayers.Event.isSingleTouch(evt)) {
             return;
         }
-        var target = this.outsideViewport ? this : this.map;
-        target.events.on({
-            touchmove: this.passEventToSlider,
-            mousemove: this.passEventToSlider,
-            mouseup: this.passEventToSlider,
+        this.map.events.on({
+            "touchmove": this.passEventToSlider,
+            "mousemove": this.passEventToSlider,
+            "mouseup": this.passEventToSlider,
             scope: this
         });
-        
         this.mouseDragStart = evt.xy.clone();
         this.zoomStart = evt.xy.clone();
         this.div.style.cursor = "move";
@@ -377,8 +370,7 @@ OpenLayers.Control.PanZoomBar = OpenLayers.Class(OpenLayers.Control.PanZoom, {
         }
         if (this.mouseDragStart) {
             this.div.style.cursor="";
-            var target = this.outsideViewport ? this : this.map;
-            target.events.un({
+            this.map.events.un({
                 "touchmove": this.passEventToSlider,
                 "mouseup": this.passEventToSlider,
                 "mousemove": this.passEventToSlider,

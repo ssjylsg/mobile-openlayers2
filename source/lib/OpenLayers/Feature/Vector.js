@@ -1,4 +1,4 @@
-/* Copyright (c) 2006-2015 by OpenLayers Contributors (see authors.txt for
+/* Copyright (c) 2006-2013 by OpenLayers Contributors (see authors.txt for
  * full list of contributors). Published under the 2-clause BSD license.
  * See license.txt in the OpenLayers distribution or repository for the
  * full text of the license. */
@@ -34,7 +34,7 @@ OpenLayers.Feature.Vector = OpenLayers.Class(OpenLayers.Feature, {
      * {String} 
      */
     fid: null,
-
+    
     /** 
      * APIProperty: geometry 
      * {<OpenLayers.Geometry>} 
@@ -62,7 +62,7 @@ OpenLayers.Feature.Vector = OpenLayers.Class(OpenLayers.Feature, {
      * {String} 
      */
     state: null,
-
+    
     /** 
      * APIProperty: style 
      * {Object} 
@@ -72,16 +72,16 @@ OpenLayers.Feature.Vector = OpenLayers.Class(OpenLayers.Feature, {
     /**
      * APIProperty: url
      * {String} If this property is set it will be taken into account by
-     *     {<OpenLayers.HTTP>} when updating or deleting the feature.
+     *     {<OpenLayers.HTTP>} when upadting or deleting the feature.
      */
     url: null,
-
+    
     /**
      * Property: renderIntent
      * {String} rendering intent currently being used
      */
     renderIntent: "default",
-
+    
     /**
      * APIProperty: modified
      * {Object} An object with the originals of the geometry and attributes of
@@ -130,18 +130,19 @@ OpenLayers.Feature.Vector = OpenLayers.Class(OpenLayers.Feature, {
      * style - {Object} An optional style object.
      */
     initialize: function(geometry, attributes, style) {
-        OpenLayers.Feature.prototype.initialize.apply(this, [null, null, attributes]);
+        OpenLayers.Feature.prototype.initialize.apply(this,
+                                                      [null, null, attributes]);
         this.lonlat = null;
         this.geometry = geometry ? geometry : null;
         this.state = null;
         this.attributes = {};
         if (attributes) {
             this.attributes = OpenLayers.Util.extend(this.attributes,
-                attributes);
+                                                     attributes);
         }
-        this.style = style ? style : null;
+        this.style = style ? style : null; 
     },
-
+    
     /** 
      * Method: destroy
      * nullify references to prevent circular references and memory leaks
@@ -151,12 +152,12 @@ OpenLayers.Feature.Vector = OpenLayers.Class(OpenLayers.Feature, {
             this.layer.removeFeatures(this);
             this.layer = null;
         }
-
+            
         this.geometry = null;
         this.modified = null;
         OpenLayers.Feature.prototype.destroy.apply(this, arguments);
     },
-
+    
     /**
      * Method: clone
      * Create a clone of this vector feature.  Does not set any non-standard
@@ -165,7 +166,7 @@ OpenLayers.Feature.Vector = OpenLayers.Class(OpenLayers.Feature, {
      * Returns:
      * {<OpenLayers.Feature.Vector>} An exact clone of this vector feature.
      */
-    clone: function() {
+    clone: function () {
         return new OpenLayers.Feature.Vector(
             this.geometry ? this.geometry.clone() : null,
             this.attributes,
@@ -176,7 +177,7 @@ OpenLayers.Feature.Vector = OpenLayers.Class(OpenLayers.Feature, {
      * Method: onScreen
      * Determine whether the feature is within the map viewport.  This method
      *     tests for an intersection between the geometry and the viewport
-     *     bounds.  If a more efficient but less precise geometry bounds
+     *     bounds.  If a more effecient but less precise geometry bounds
      *     intersection is desired, call the method with the boundsOnly
      *     parameter true.
      *
@@ -189,18 +190,18 @@ OpenLayers.Feature.Vector = OpenLayers.Class(OpenLayers.Feature, {
      * {Boolean} The feature is currently visible on screen (optionally
      *     based on its bounds if boundsOnly is true).
      */
-    onScreen: function(boundsOnly) {
+    onScreen:function(boundsOnly) {
         var onScreen = false;
-        if (this.layer && this.layer.map) {
+        if(this.layer && this.layer.map) {
             var screenBounds = this.layer.map.getExtent();
-            if (boundsOnly) {
+            if(boundsOnly) {
                 var featureBounds = this.geometry.getBounds();
                 onScreen = screenBounds.intersectsBounds(featureBounds);
             } else {
                 var screenPoly = screenBounds.toGeometry();
                 onScreen = screenPoly.intersects(this.geometry);
             }
-        }
+        }    
         return onScreen;
     },
 
@@ -219,12 +220,12 @@ OpenLayers.Feature.Vector = OpenLayers.Class(OpenLayers.Feature, {
      */
     getVisibility: function() {
         return !(this.style && this.style.display == 'none' ||
-            !this.layer ||
-            this.layer && this.layer.styleMap &&
-            this.layer.styleMap.createSymbolizer(this, this.renderIntent).display == 'none' ||
-            this.layer && !this.layer.getVisibility());
+                 !this.layer ||
+                 this.layer && this.layer.styleMap &&
+                 this.layer.styleMap.createSymbolizer(this, this.renderIntent).display == 'none' ||
+                 this.layer && !this.layer.getVisibility());
     },
-
+    
     /**
      * Method: createMarker
      * HACK - we need to decide if all vector features should be able to
@@ -276,9 +277,9 @@ OpenLayers.Feature.Vector = OpenLayers.Class(OpenLayers.Feature, {
      */
     atPoint: function(lonlat, toleranceLon, toleranceLat) {
         var atPoint = false;
-        if (this.geometry) {
-            atPoint = this.geometry.atPoint(lonlat, toleranceLon,
-                toleranceLat);
+        if(this.geometry) {
+            atPoint = this.geometry.atPoint(lonlat, toleranceLon, 
+                                                    toleranceLat);
         }
         return atPoint;
     },
@@ -302,7 +303,7 @@ OpenLayers.Feature.Vector = OpenLayers.Class(OpenLayers.Feature, {
      */
     move: function(location) {
 
-        if (!this.layer || !this.geometry.move) {
+        if(!this.layer || !this.geometry.move){
             //do nothing if no layer or immoveable geometry
             return undefined;
         }
@@ -313,15 +314,15 @@ OpenLayers.Feature.Vector = OpenLayers.Class(OpenLayers.Feature, {
         } else {
             pixel = location;
         }
-
+        
         var lastPixel = this.layer.getViewPortPxFromLonLat(this.geometry.getBounds().getCenterLonLat());
         var res = this.layer.map.getResolution();
         this.geometry.move(res * (pixel.x - lastPixel.x),
-            res * (lastPixel.y - pixel.y));
+                           res * (lastPixel.y - pixel.y));
         this.layer.drawFeature(this);
         return lastPixel;
     },
-
+    
     /**
      * Method: toState
      * Sets the new state
@@ -464,11 +465,11 @@ OpenLayers.Feature.Vector = OpenLayers.Class(OpenLayers.Feature, {
  * fontStyle - {String} The font style for the label, to be provided like in CSS.
  * fontWeight - {String} The font weight for the label, to be provided like in CSS.
  * display - {String} Symbolizers will have no effect if display is set to "none".  All other values have no effect.
- */
+ */ 
 OpenLayers.Feature.Vector.style = {
     'default': {
         fillColor: "#ee9900",
-        fillOpacity: 0.4,
+        fillOpacity: 0.4, 
         hoverFillColor: "white",
         hoverFillOpacity: 0.8,
         strokeColor: "#ee9900",
@@ -491,7 +492,7 @@ OpenLayers.Feature.Vector.style = {
     },
     'select': {
         fillColor: "blue",
-        fillOpacity: 0.4,
+        fillOpacity: 0.4, 
         hoverFillColor: "white",
         hoverFillOpacity: 0.8,
         strokeColor: "blue",
@@ -515,7 +516,7 @@ OpenLayers.Feature.Vector.style = {
     },
     'temporary': {
         fillColor: "#66cccc",
-        fillOpacity: 0.2,
+        fillOpacity: 0.2, 
         hoverFillColor: "white",
         hoverFillOpacity: 0.8,
         strokeColor: "#66cccc",
@@ -540,4 +541,4 @@ OpenLayers.Feature.Vector.style = {
     'delete': {
         display: "none"
     }
-};
+};    

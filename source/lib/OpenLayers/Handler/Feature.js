@@ -1,4 +1,4 @@
-/* Copyright (c) 2006-2015 by OpenLayers Contributors (see authors.txt for
+/* Copyright (c) 2006-2013 by OpenLayers Contributors (see authors.txt for
  * full list of contributors). Published under the 2-clause BSD license.
  * See license.txt in the OpenLayers distribution or repository for the
  * full text of the license. */
@@ -113,7 +113,7 @@ OpenLayers.Handler.Feature = OpenLayers.Class(OpenLayers.Handler, {
      * layer - {<OpenLayers.Layer.Vector>}
      * callbacks - {Object} An object with a 'over' property whos value is
      *     a function to be called when the mouse is over a feature. The 
-     *     callback should expect to receive a single argument, the feature.
+     *     callback should expect to recieve a single argument, the feature.
      * options - {Object} 
      */
     initialize: function(control, layer, callbacks, options) {

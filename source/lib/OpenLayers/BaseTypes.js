@@ -1,4 +1,4 @@
-/* Copyright (c) 2006-2015 by OpenLayers Contributors (see authors.txt for
+/* Copyright (c) 2006-2013 by OpenLayers Contributors (see authors.txt for
  * full list of contributors). Published under the 2-clause BSD license.
  * See license.txt in the OpenLayers distribution or repository for the
  * full text of the license. */
@@ -337,12 +337,12 @@ OpenLayers.Function = {
      */
     bind: function(func, object) {
         // create a reference to all arguments past the second one
-        var args = Array.prototype.slice.call(arguments, 2);
+        var args = Array.prototype.slice.apply(arguments, [2]);
         return function() {
             // Push on any additional arguments from the actual function call.
             // These will come after those sent to the bind call.
             var newArgs = args.concat(
-                Array.prototype.slice.call(arguments, 0)
+                Array.prototype.slice.apply(arguments, [0])
             );
             return func.apply(object, newArgs);
         };

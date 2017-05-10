@@ -1,4 +1,4 @@
-/* Copyright (c) 2006-2015 by OpenLayers Contributors (see authors.txt for
+/* Copyright (c) 2006-2013 by OpenLayers Contributors (see authors.txt for
  * full list of contributors). Published under the 2-clause BSD license.
  * See license.txt in the OpenLayers distribution or repository for the
  * full text of the license. */
@@ -12,15 +12,15 @@
 
 /**
  * Class: OpenLayers.Format.CQL
- * Read CQL strings to get <OpenLayers.Filter> objects.  Write
- *     <OpenLayers.Filter> objects to get CQL strings. Create a new parser with
+ * Read CQL strings to get <OpenLayers.Filter> objects.  Write 
+ *     <OpenLayers.Filter> objects to get CQL strings. Create a new parser with 
  *     the <OpenLayers.Format.CQL> constructor.
  *
  * Inherits from:
  *  - <OpenLayers.Format>
  */
 OpenLayers.Format.CQL = (function() {
-
+    
     var tokens = [
         "PROPERTY", "COMPARISON", "VALUE", "LOGICAL"
     ],
@@ -31,7 +31,7 @@ OpenLayers.Format.CQL = (function() {
         IS_NULL: /^IS NULL/i,
         COMMA: /^,/,
         LOGICAL: /^(AND|OR)/i,
-        VALUE: /^('([^']|'')*'|-?\d+(\.\d*)?|\.\d+)/,
+        VALUE: /^('([^']|'')*'|\d+(\.\d*)?|\.\d+)/,
         LPAREN: /^\(/,
         RPAREN: /^\)/,
         SPATIAL: /^(BBOX|INTERSECTS|DWITHIN|WITHIN|CONTAINS)/i,
@@ -355,7 +355,7 @@ OpenLayers.Format.CQL = (function() {
          * Returns:
          * {<OpenLayers.Filter>} A filter based on the CQL text.
          */
-        read: function(text) {
+        read: function(text) { 
             var result = buildAst(tokenize(text));
             if (this.keepData) {
                 this.data = result;
@@ -407,7 +407,7 @@ OpenLayers.Format.CQL = (function() {
                     }
                 case "OpenLayers.Filter.Logical":
                     if (filter.type == OpenLayers.Filter.Logical.NOT) {
-                        // TODO: deal with precedence of logical operators to
+                        // TODO: deal with precedence of logical operators to 
                         // avoid extra parentheses (not urgent)
                         return "NOT (" + this.write(filter.filters[0]) + ")";
                     } else {
@@ -425,12 +425,12 @@ OpenLayers.Format.CQL = (function() {
                     }
                 case "OpenLayers.Filter.Comparison":
                     if (filter.type == OpenLayers.Filter.Comparison.BETWEEN) {
-                        return filter.property + " BETWEEN " +
-                            this.write(filter.lowerBoundary) + " AND " +
+                        return filter.property + " BETWEEN " + 
+                            this.write(filter.lowerBoundary) + " AND " + 
                             this.write(filter.upperBoundary);
                     } else {
                         return (filter.value !== null) ? filter.property +
-                            " " + operatorReverse[filter.type] + " " +
+                            " " + operatorReverse[filter.type] + " " + 
                             this.write(filter.value) : filter.property +
                             " " + operatorReverse[filter.type];
                     }
@@ -449,3 +449,4 @@ OpenLayers.Format.CQL = (function() {
 
     });
 })();
+

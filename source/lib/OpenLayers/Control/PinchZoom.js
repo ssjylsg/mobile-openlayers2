@@ -1,4 +1,4 @@
-/* Copyright (c) 2006-2015 by OpenLayers Contributors (see authors.txt for
+/* Copyright (c) 2006-2013 by OpenLayers Contributors (see authors.txt for
  * full list of contributors). Published under the 2-clause BSD license.
  * See license.txt in the OpenLayers distribution or repository for the
  * full text of the license. */
@@ -135,9 +135,9 @@ OpenLayers.Control.PinchZoom = OpenLayers.Class(OpenLayers.Control, {
             location.lat -= resolution * ((size.h / 2) - zoomPixel.y);
 
             // Force a reflow before calling setCenter. This is to work
-            // around an issue occurring in iOS.
+            // around an issue occuring in iOS.
             //
-            // See https://github.com/openlayers/ol2/pull/351.
+            // See https://github.com/openlayers/openlayers/pull/351.
             //
             // Without a reflow setting the layer container div's top left
             // style properties to "0px" - as done in Map.moveTo when zoom

@@ -1,4 +1,4 @@
-/* Copyright (c) 2006-2015 by OpenLayers Contributors (see authors.txt for
+/* Copyright (c) 2006-2013 by OpenLayers Contributors (see authors.txt for
  * full list of contributors). Published under the 2-clause BSD license.
  * See license.txt in the OpenLayers distribution or repository for the
  * full text of the license. */
@@ -197,7 +197,7 @@ OpenLayers.Layer.WMS = OpenLayers.Class(OpenLayers.Layer.Grid, {
     getURL: function (bounds) {
         bounds = this.adjustBounds(bounds);
         
-        var imageSize = this.getImageSize(bounds);
+        var imageSize = this.getImageSize();
         var newParams = {};
         // WMS 1.3 introduced axis order
         var reverseAxisOrder = this.reverseAxisOrder();

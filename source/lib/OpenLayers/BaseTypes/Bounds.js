@@ -1,4 +1,4 @@
-/* Copyright (c) 2006-2015 by OpenLayers Contributors (see authors.txt for
+/* Copyright (c) 2006-2013 by OpenLayers Contributors (see authors.txt for
  * full list of contributors). Published under the 2-clause BSD license.
  * See license.txt in the OpenLayers distribution or repository for the
  * full text of the license. */
@@ -164,7 +164,7 @@ OpenLayers.Bounds = OpenLayers.Class({
      * Returns a boundingbox-string representation of the bounds object.
      * 
      * Parameters:
-     * decimal - {Integer} How many decimal places in the bbox coords?
+     * decimal - {Integer} How many significant digits in the bbox coords?
      *                     Default is 6
      * reverseAxisOrder - {Boolean} Should we reverse the axis order?
      * 

@@ -1,4 +1,4 @@
-/* Copyright (c) 2006-2015 by OpenLayers Contributors (see authors.txt for
+/* Copyright (c) 2006-2013 by OpenLayers Contributors (see authors.txt for
  * full list of contributors). Published under the 2-clause BSD license.
  * See license.txt in the OpenLayers distribution or repository for the
  * full text of the license. */
@@ -33,13 +33,6 @@ OpenLayers.Control.Scale = OpenLayers.Class(OpenLayers.Control, {
      * pixel in the center of the map viewport.
      */
     geodesic: false,
-
-    /**
-     * APIProperty: template
-     * {String} Template string for the scale label.
-     * Scale denominator value is substituted for token ${scaleDenom}. 
-     */
-	template: "Scale = 1 : ${scaleDenom}",
 
     /**
      * Constructor: OpenLayers.Control.Scale
@@ -99,8 +92,7 @@ OpenLayers.Control.Scale = OpenLayers.Class(OpenLayers.Control, {
             scale = Math.round(scale);
         }    
         
-        var scaleStr = OpenLayers.i18n(this.template, {'scaleDenom':scale});
-        this.element.innerHTML = scaleStr;
+        this.element.innerHTML = OpenLayers.i18n("Scale = 1 : ${scaleDenom}", {'scaleDenom':scale});
     }, 
 
     CLASS_NAME: "OpenLayers.Control.Scale"

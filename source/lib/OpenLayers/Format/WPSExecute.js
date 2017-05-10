@@ -1,4 +1,4 @@
-/* Copyright (c) 2006-2015 by OpenLayers Contributors (see authors.txt for
+/* Copyright (c) 2006-2013 by OpenLayers Contributors (see authors.txt for
  * full list of contributors). Published under the 2-clause BSD license.
  * See license.txt in the OpenLayers distribution or repository for the
  * full text of the license. */
@@ -80,7 +80,7 @@ OpenLayers.Format.WPSExecute = OpenLayers.Class(OpenLayers.Format.XML,
      */
     write: function(options) {
         var doc;
-        if (OpenLayers.Format.XML.supportActiveX) {
+        if (window.ActiveXObject) {
             doc = new ActiveXObject("Microsoft.XMLDOM");
             this.xmldom = doc;
         } else {

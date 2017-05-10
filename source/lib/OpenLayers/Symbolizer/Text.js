@@ -1,4 +1,4 @@
-/* Copyright (c) 2006-2015 by OpenLayers Contributors (see authors.txt for
+/* Copyright (c) 2006-2013 by OpenLayers Contributors (see authors.txt for
  * full list of contributors). Published under the 2-clause BSD license.
  * See license.txt in the OpenLayers distribution or repository for the
  * full text of the license. */
@@ -42,22 +42,8 @@ OpenLayers.Symbolizer.Text = OpenLayers.Class(OpenLayers.Symbolizer, {
      */
     
     /**
-     * APIProperty: fontStyle
+     * Property: fontStyle
      * {String} The font style for the label.
-     * 
-     * No default set here.  Use OpenLayers.Renderer.defaultRenderer for defaults.
-     */
-
-    /**
-     * APIProperty: fontColor
-     * {String} The font color for the label.
-     * 
-     * No default set here.  Use OpenLayers.Renderer.defaultRenderer for defaults.
-     */
-
-    /**
-     * APIProperty: fontOpacity
-     * {String} The font opacity for the label.
      * 
      * No default set here.  Use OpenLayers.Renderer.defaultRenderer for defaults.
      */

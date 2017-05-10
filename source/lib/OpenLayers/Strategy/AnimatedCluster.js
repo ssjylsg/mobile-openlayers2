@@ -289,7 +289,12 @@ OpenLayers.Strategy.AnimatedCluster = OpenLayers.Class(OpenLayers.Strategy.Clust
 
         var xStart = this.binarySearch(this._xData, xmin, 'x');
         var xEnd = this.binarySearch(this._xData, xmax, 'x');
-        var newXData = this._xData.slice(xStart, xEnd + 1);
+        var newXData = [];
+        if (xStart == xEnd && (xStart == this._xData.length - 1 || xStart == 0)) {
+            newXData = [];
+        } else {
+            newXData = this._xData.slice(xStart, xEnd + 1);
+        }
 
         var newFeatures = [];
         for (var j = 0; j < newXData.length; j++) {
@@ -467,7 +472,7 @@ OpenLayers.Strategy.AnimatedCluster = OpenLayers.Class(OpenLayers.Strategy.Clust
                                         markType: candidate.cluster[k].markType
                                     }
                                 );
-                                candidateCluster.cluster=[],candidateCluster.cluster.push(candidate.cluster[k]);
+                                candidateCluster.cluster = [], candidateCluster.cluster.push(candidate.cluster[k]);
                                 candidateCluster.data = candidate.cluster[k];
                                 candidate.cluster[k]._apiObj = candidateCluster;
                                 clone.push(candidateCluster);

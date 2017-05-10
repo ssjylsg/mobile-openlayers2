@@ -1,4 +1,4 @@
-/* Copyright (c) 2006-2015 by OpenLayers Contributors (see authors.txt for
+/* Copyright (c) 2006-2013 by OpenLayers Contributors (see authors.txt for
  * full list of contributors). Published under the 2-clause BSD license.
  * See license.txt in the OpenLayers distribution or repository for the
  * full text of the license. */
@@ -1771,29 +1771,3 @@ OpenLayers.Util.getFormattedLonLat = function(coordinate, axis, dmsOption) {
     return str;
 };
 
-/**
- * Function: getConstructor
- * Take an OpenLayers style CLASS_NAME and return a constructor.
- *
- * Parameters:
- * className - {String} The dot delimited class name (e.g. 'OpenLayers.Foo').
- * 
- * Returns:
- * {Function} The constructor.
- */
-OpenLayers.Util.getConstructor = function(className) {
-    var Constructor;
-    var parts = className.split('.');
-    if (parts[0] === "OpenLayers") {
-        Constructor = OpenLayers;
-    } else {
-        // someone extended our base class and used their own namespace
-        // this will not work when the library is evaluated in a closure
-        // but it is the best we can do (until we ourselves provide a global)
-        Constructor = window[parts[0]];
-    }
-    for (var i = 1, ii = parts.length; i < ii; ++i) {
-        Constructor = Constructor[parts[i]];
-    }
-    return Constructor;
-};

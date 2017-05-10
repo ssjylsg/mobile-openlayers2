@@ -1,10 +1,9 @@
-/* Copyright (c) 2006-2015 by OpenLayers Contributors (see authors.txt for
+/* Copyright (c) 2006-2013 by OpenLayers Contributors (see authors.txt for
  * full list of contributors). Published under the 2-clause BSD license.
  * See license.txt in the OpenLayers distribution or repository for the
  * full text of the license. */
 
 /**
- * @requires OpenLayers/BaseTypes.js
  * @requires OpenLayers/Format/SLD/v1_0_0.js
  */
 
@@ -54,7 +53,7 @@ OpenLayers.Format.SLD.v1_0_0_GeoServer = OpenLayers.Class(
             "Priority": function(node, obj) {
                 var value = this.readers.ogc._expression.call(this, node);
                 if (value) {
-                    obj.priority = OpenLayers.String.trim(value);
+                    obj.priority = value;
                 }
             },
             "VendorOption": function(node, obj) {

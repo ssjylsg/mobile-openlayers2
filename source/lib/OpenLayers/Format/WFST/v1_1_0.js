@@ -1,4 +1,4 @@
-/* Copyright (c) 2006-2015 by OpenLayers Contributors (see authors.txt for
+/* Copyright (c) 2006-2013 by OpenLayers Contributors (see authors.txt for
  * full list of contributors). Published under the 2-clause BSD license.
  * See license.txt in the OpenLayers distribution or repository for the
  * full text of the license. */
@@ -151,14 +151,13 @@ OpenLayers.Format.WFST.v1_1_0 = OpenLayers.Class(
                 var prefix = options.featurePrefix;
                 var node = this.createElementNSPlus("wfs:Query", {
                     attributes: {
-                        typeName: (options.featureNS ? prefix + ":" : "") +
+                        typeName: (prefix ? prefix + ":" : "") +
                             options.featureType,
                         srsName: options.srsName
                     }
                 });
                 if(options.featureNS) {
-                    this.setAttributeNS(node, this.namespaces.xmlns,
-                        "xmlns:" + prefix, options.featureNS);
+                    node.setAttribute("xmlns:" + prefix, options.featureNS);
                 }
                 if(options.propertyNames) {
                     for(var i=0,len = options.propertyNames.length; i<len; i++) {

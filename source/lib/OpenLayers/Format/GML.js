@@ -1,4 +1,4 @@
-/* Copyright (c) 2006-2015 by OpenLayers Contributors (see authors.txt for
+/* Copyright (c) 2006-2013 by OpenLayers Contributors (see authors.txt for
  * full list of contributors). Published under the 2-clause BSD license.
  * See license.txt in the OpenLayers distribution or repository for the
  * full text of the license. */
@@ -187,13 +187,11 @@ OpenLayers.Format.GML = OpenLayers.Class(OpenLayers.Format.XML, {
         var feature = new OpenLayers.Feature.Vector(geometry, attributes);
         feature.bounds = bounds;
         
-        var firstChild = this.getFirstElementChild(node);
         feature.gml = {
-            featureType: firstChild.nodeName.split(":")[1],
-            featureNS: firstChild.namespaceURI,
-            featureNSPrefix: firstChild.prefix
+            featureType: node.firstChild.nodeName.split(":")[1],
+            featureNS: node.firstChild.namespaceURI,
+            featureNSPrefix: node.firstChild.prefix
         };
-        feature.type = feature.gml.featureType;
                 
         // assign fid - this can come from a "fid" or "id" attribute
         var childNode = node.firstChild;

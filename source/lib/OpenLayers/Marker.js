@@ -1,4 +1,4 @@
-/* Copyright (c) 2006-2015 by OpenLayers Contributors (see authors.txt for
+/* Copyright (c) 2006-2013 by OpenLayers Contributors (see authors.txt for
  * full list of contributors). Published under the 2-clause BSD license.
  * See license.txt in the OpenLayers distribution or repository for the
  * full text of the license. */
@@ -60,8 +60,8 @@ OpenLayers.Marker = OpenLayers.Class({
      * Property: map 
      * {<OpenLayers.Map>} the map this marker is attached to
      */
-    map: null,
-    
+    map: null,    
+     
     /** 
      * Constructor: OpenLayers.Marker
      *
@@ -69,7 +69,7 @@ OpenLayers.Marker = OpenLayers.Class({
      * lonlat - {<OpenLayers.LonLat>} the position of this marker
      * icon - {<OpenLayers.Icon>}  the icon for this marker
      */
-    initialize: function(lonlat, icon) {
+    initialize: function(lonlat, icon,labelText) {
         this.lonlat = lonlat;
         
         var newIcon = (icon) ? icon : OpenLayers.Marker.defaultIcon();
@@ -82,6 +82,13 @@ OpenLayers.Marker = OpenLayers.Class({
             this.icon.calculateOffset = newIcon.calculateOffset;
         }
         this.events = new OpenLayers.Events(this, this.icon.imageDiv);
+        if(labelText){
+           var label = document.createElement('span');          
+           label.style.display = 'inline';
+           label.innerText = labelText;
+           this.icon.imageDiv.appendChild(label);
+           
+        }
     },
     
     /**

@@ -1,4 +1,4 @@
-/* Copyright (c) 2006-2015 by OpenLayers Contributors (see authors.txt for
+/* Copyright (c) 2006-2013 by OpenLayers Contributors (see authors.txt for
  * full list of contributors). Published under the 2-clause BSD license.
  * See license.txt in the OpenLayers distribution or repository for the
  * full text of the license. */
@@ -147,14 +147,10 @@ OpenLayers.Layer = OpenLayers.Class({
 
     /**
      * APIProperty: attribution
-     * {<Object>} or {<String>} Attribution information, displayed when an
+     * {String} Attribution string, displayed when an 
      *     <OpenLayers.Control.Attribution> has been added to the map.
-     *
-     *     An object is required to store the full attribution information
-     *     from a WMS capabilities response. Example attribution object:
-     *     {title:"",href:"",logo:{format:"",width:10,height:10,href:""}}
      */
-    attribution: null,
+    attribution: null, 
 
     /** 
      * Property: inRange
@@ -636,12 +632,8 @@ OpenLayers.Layer = OpenLayers.Class({
 
             // Check the projection to see if we can get units -- if not, refer
             // to properties.
-            if (this.projection && this.projection.getUnits()) {
-                this.units = this.projection.getUnits();
-            }
-            else {
-                this.units = this.units || this.map.units;
-            }
+            this.units = this.projection.getUnits() ||
+                         this.units || this.map.units;
             
             this.initResolutions();
             

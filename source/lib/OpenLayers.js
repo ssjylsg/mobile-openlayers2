@@ -1,4 +1,4 @@
-/* Copyright (c) 2006-2015 by OpenLayers Contributors (see authors.txt for
+/* Copyright (c) 2006-2013 by OpenLayers Contributors (see authors.txt for
  * full list of contributors). Published under the 2-clause BSD license.
  * See license.txt in the OpenLayers distribution or repository for the
  * full text of the license. */
@@ -130,7 +130,6 @@
     if(!singleFile) {
         if (!jsFiles) {
             jsFiles = [
-                'OpenLayers/SingleFile.js',
         'OpenLayers/BaseTypes/Class.js',
         'OpenLayers/Util/vendorPrefix.js',
         'OpenLayers/Animation.js',
@@ -245,7 +244,8 @@
         'OpenLayers/Strategy/AnimatedCluster.js',
         'OpenLayers/Rule.js',
         'OpenLayers/Control/Measure.js',
-        'OpenLayers/Control/ScaleLine.js'
+        'OpenLayers/Control/ScaleLine.js',
+        'OpenLayers/Format/WKT.js',
             ]; // etc.
         }
 
@@ -271,4 +271,4 @@
  * When asking questions or reporting issues, make sure to include the output of
  *     OpenLayers.VERSION_NUMBER in the question or issue-description.
  */
-OpenLayers.VERSION_NUMBER="Release 2.14 dev";
+OpenLayers.VERSION_NUMBER="Release 2.13.1";

@@ -10,8 +10,8 @@
 
 /**
  * Class: OpenLayers.Layer.TMS_PGIS
- * Create a layer for accessing tiles from services that conform with the
- *     Tile Map Service Specification
+ * Create a layer for accessing tiles from services that conform with the 
+ *     Tile Map Service Specification 
  *     (http://wiki.osgeo.org/wiki/Tile_Map_Service_Specification).
  *
  * Example:
@@ -22,7 +22,7 @@
  *         {layername: "basic", type: "png"} // required properties
  *     );
  * (end)
- *
+ * 
  * Inherits from:
  *  - <OpenLayers.Layer.Grid>
  */
@@ -32,13 +32,13 @@ OpenLayers.Layer.TMS_PGIS = OpenLayers.Class(OpenLayers.Layer.Grid, {
      * APIProperty: serviceVersion
      * {String} Service version for tile requests.  Default is "1.0.0".
      */
-    serviceVersion: "0.3",
+    serviceVersion: "1.0.0",
 
     /**
      * APIProperty: layername
-     * {String} The identifier for the <TileMap> as advertised by the service.
-     *     For example, if the service advertises a <TileMap> with
-     *    'href="http://tms.osgeo.org/1.0.0/vmap0"', the <layername> property
+     * {String} The identifier for the <TileMap> as advertised by the service.  
+     *     For example, if the service advertises a <TileMap> with 
+     *    'href="http://tms.osgeo.org/1.0.0/vmap0"', the <layername> property 
      *     would be set to "vmap0".
      */
     layername: null,
@@ -46,8 +46,8 @@ OpenLayers.Layer.TMS_PGIS = OpenLayers.Class(OpenLayers.Layer.Grid, {
     /**
      * APIProperty: type
      * {String} The format extension corresponding to the requested tile image
-     *     type.  This is advertised in a <TileFormat> element as the
-     *     "extension" attribute.  For example, if the service advertises a
+     *     type.  This is advertised in a <TileFormat> element as the 
+     *     "extension" attribute.  For example, if the service advertises a 
      *     <TileMap> with <TileFormat width="256" height="256" mime-type="image/jpeg" extension="jpg" />,
      *     the <type> property would be set to "jpg".
      */
@@ -74,7 +74,7 @@ OpenLayers.Layer.TMS_PGIS = OpenLayers.Class(OpenLayers.Layer.Grid, {
      *         "My Layer",
      *         "http://tilecache.osgeo.org/wms-c/Basic.py/",
      *         {
-     *             layername: "basic",
+     *             layername: "basic", 
      *             type: "png",
      *             // set if different than the bottom left of map.maxExtent
      *             tileOrigin: new OpenLayers.LonLat(-180, -90)
@@ -113,10 +113,10 @@ OpenLayers.Layer.TMS_PGIS = OpenLayers.Class(OpenLayers.Layer.Grid, {
      *     of the server resolutions.
      */
     zoomOffset: 0,
-
+    
     /**
      * Constructor: OpenLayers.Layer.TMS_PGIS
-     *
+     * 
      * Parameters:
      * name - {String} Title to be displayed in a <OpenLayers.Control.LayerSwitcher>
      * url - {String} Service endpoint (without the version number).  E.g.
@@ -128,7 +128,7 @@ OpenLayers.Layer.TMS_PGIS = OpenLayers.Class(OpenLayers.Layer.Grid, {
         var newArguments = [];
         newArguments.push(name, url, {}, options);
         OpenLayers.Layer.Grid.prototype.initialize.apply(this, newArguments);
-    },
+    },    
 
     /**
      * APIMethod: clone
@@ -137,16 +137,16 @@ OpenLayers.Layer.TMS_PGIS = OpenLayers.Class(OpenLayers.Layer.Grid, {
      * Parameters:
      * obj - {Object} Should only be provided by subclasses that call this
      *     method.
-     *
+     * 
      * Returns:
      * {<OpenLayers.Layer.TMS_PGIS>} An exact clone of this <OpenLayers.Layer.TMS_PGIS>
      */
-    clone: function(obj) {
-
+    clone: function (obj) {
+        
         if (obj == null) {
             obj = new OpenLayers.Layer.TMS_PGIS(this.name,
-                this.url,
-                this.getOptions());
+                                           this.url,
+                                           this.getOptions());
         }
 
         //get all additions from superclasses
@@ -155,81 +155,69 @@ OpenLayers.Layer.TMS_PGIS = OpenLayers.Class(OpenLayers.Layer.Grid, {
         // copy/set any non-init, non-simple values here
 
         return obj;
-    },
-
+    },    
+    
     /**
      * Method: getURL
-     *
+     * 
      * Parameters:
      * bounds - {<OpenLayers.Bounds>}
-     *
+     * 
      * Returns:
-     * {String} A string with the layer's url and parameters and also the
-     *          passed-in bounds and appropriate tile size specified as
+     * {String} A string with the layer's url and parameters and also the 
+     *          passed-in bounds and appropriate tile size specified as 
      *          parameters
      */
-    getURL: function(bounds) {
-        var z = this.map.getZoom();
-        var res = this.getResolution();
-        var originTileX = (this.tileOrigin.lon + (res * this.tileSize.w / 2));
-        var originTileY = (this.tileOrigin.lat - (res * this.tileSize.h / 2));
+    getURL: function (bounds) {
+       	var res = this.getResolution(); 
+		console.log(res);
+        // tile center
+        var originTileX = (this.tileOrigin.lon + (res * this.tileSize.w/2)); 
+        var originTileY = (this.tileOrigin.lat - (res * this.tileSize.h/2));
 
-        var center = bounds.getCenterLonLat();
-        var point = {
-            x: center.lon,
-            y: center.lat
-        };
-        var x = (Math.round(Math.abs((center.lon - originTileX) / (res * this.tileSize.w))));
-        var y = (Math.round(Math.abs((originTileY - center.lat) / (res * this.tileSize.h))));
-        if (x == 0 || y == 0) return null;
-        y = y - 1;
-
-        if (this.url.indexOf('$') != -1) {
-            return OpenLayers.String.format(this.url, {
-                'x': x,
-                'y': y,
-                'z': z
-            });
-        } else {
-            return this.url + "/EzMap?Service=getImage&Type=RGB&ZoomOffset=" +
-                this.zoomOffset + "&V=" + this.serviceVersion + "&Col=" + x + "&Row=" + y + "&Zoom=" + (z - this.zoomOffset);
-        }
-
-
+        var center = bounds.getCenterLonLat();		
+        var point = { x: center.lon, y: center.lat };
+        console.log("center=" +center);
+        console.log("originTileX=" +originTileX);
+        var x = (Math.round(Math.abs((center.lon - originTileX) / (res * this.tileSize.w)))); 
+        var y = (Math.round(Math.abs((originTileY - center.lat) / (res * this.tileSize.h)))); 
+		 if (x == 0 || y == 0) return null;
+        var z = this.map.getZoom(); 
+	    return this.url +  "/EzMap?Service=getImage&Type=RGB&ZoomOffset=0&V=0.3&Col=" +x+ "&Row="+y+"&Zoom="+z;
     },
 
     /** 
      * Method: setMap
-     * When the layer is added to a map, then we can fetch our origin
-     *    (if we don't have one.)
-     *
+     * When the layer is added to a map, then we can fetch our origin 
+     *    (if we don't have one.) 
+     * 
      * Parameters:
      * map - {<OpenLayers.Map>}
      */
     setMap: function(map) {
         OpenLayers.Layer.Grid.prototype.setMap.apply(this, arguments);
-        if (!this.tileOrigin) {
+        if (!this.tileOrigin) { 
             this.tileOrigin = new OpenLayers.LonLat(this.map.maxExtent.left,
-                this.map.maxExtent.bottom);
-        }
+                                                this.map.maxExtent.bottom);
+        }                                       
     },
-    // getUpperLeftTileCoord: function(res) {
-    //     var upperLeft = new OpenLayers.Geometry.Point(
-    //         this.maxExtent.left,
-    //         this.maxExtent.top);
-    //     return this.getContainingTileCoords(upperLeft, res);
-    // },
-    // getContainingTileCoords: function(point, res) {
-    //     return new OpenLayers.Pixel(
-    //         Math.max(Math.floor((point.x - this.tileOrigin.lon) / (this.tileSize.w * res)), 0),
-    //         Math.max(Math.floor((this.tileOrigin.lat - point.y) / (this.tileSize.h * res)), 0)
-    //     );
-    // },
-    // getLowerRightTileCoord: function(res) {
-    //     var bottomRight = new OpenLayers.Geometry.Point(
-    //         this.maxExtent.right,
-    //         this.maxExtent.bottom);
-    //     return this.getContainingTileCoords(bottomRight, res);
-    // },
+		 getUpperLeftTileCoord:function  (res) {
+        var upperLeft = new OpenLayers.Geometry.Point(
+            this.maxExtent.left,
+            this.maxExtent.top);
+        return this.getContainingTileCoords(upperLeft, res);
+    },
+	 getContainingTileCoords:function(point, res) {
+        return new OpenLayers.Pixel(
+           Math.max(Math.floor((point.x - this.tileOrigin.lon) / (this.tileSize.w * res)),0),
+           Math.max(Math.floor((this.tileOrigin.lat - point.y) / (this.tileSize.h * res)),0)
+        );
+    },
+	 getLowerRightTileCoord: function(res) {
+        var bottomRight = new OpenLayers.Geometry.Point(
+            this.maxExtent.right,
+            this.maxExtent.bottom);
+        return this.getContainingTileCoords(bottomRight, res);
+    },
     CLASS_NAME: "OpenLayers.Layer.TMS_PGIS"
 });

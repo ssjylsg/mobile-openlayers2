@@ -1,4 +1,4 @@
-/* Copyright (c) 2006-2015 by OpenLayers Contributors (see authors.txt for
+/* Copyright (c) 2006-2013 by OpenLayers Contributors (see authors.txt for
  * full list of contributors). Published under the 2-clause BSD license.
  * See license.txt in the OpenLayers distribution or repository for the
  * full text of the license. */
@@ -35,8 +35,8 @@ OpenLayers.Layer.OSM = OpenLayers.Class(OpenLayers.Layer.XYZ, {
 
     /**
      * APIProperty: url
-     * {String} The tileset URL scheme. Defaults to (protocol relative url):
-     *  //[a|b|c].tile.openstreetmap.org/${z}/${x}/${y}.png 
+     * {String} The tileset URL scheme. Defaults to
+     * : http://[a|b|c].tile.openstreetmap.org/${z}/${x}/${y}.png
      * (the official OSM tileset) if the second argument to the constructor
      * is null or undefined. To use another tileset you can have something
      * like this:
@@ -57,7 +57,7 @@ OpenLayers.Layer.OSM = OpenLayers.Class(OpenLayers.Layer.XYZ, {
      * Property: attribution
      * {String} The layer attribution.
      */
-    attribution: "&copy; <a href='//www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors",
+    attribution: "&copy; <a href='http://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors",
 
     /**
      * Property: sphericalMercator

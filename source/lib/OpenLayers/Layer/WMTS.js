@@ -1,4 +1,4 @@
-/* Copyright (c) 2006-2015 by OpenLayers Contributors (see authors.txt for
+/* Copyright (c) 2006-2013 by OpenLayers Contributors (see authors.txt for
  * full list of contributors). Published under the 2-clause BSD license.
  * See license.txt in the OpenLayers distribution or repository for the
  * full text of the license. */
@@ -102,7 +102,7 @@ OpenLayers.Layer.WMTS = OpenLayers.Class(OpenLayers.Layer.Grid, {
      *     be the matrix identifier that corresponds to the map zoom level.
      *     Additionally, a list of objects can be provided.  Each object should
      *     describe the matrix as presented in the WMTS capabilities.  These
-     *     objects should have the properties shown below.
+     *     objects should have the propertes shown below.
      * 
      * Matrix properties:
      * identifier - {String} The matrix identifier (required).
@@ -453,7 +453,7 @@ OpenLayers.Layer.WMTS = OpenLayers.Class(OpenLayers.Layer.Grid, {
                     // append optional dimension path elements
                     if (dimensions) {
                         for (var i=0; i<dimensions.length; i++) {
-                            if (params[dimensions[i]] !== undefined) {
+                            if (params[dimensions[i]]) {
                                 path = path + params[dimensions[i]] + "/";
                             }
                         }
@@ -499,9 +499,11 @@ OpenLayers.Layer.WMTS = OpenLayers.Class(OpenLayers.Layer.Grid, {
      * newParams - {Object} Properties to extend to existing <params>.
      */
     mergeNewParams: function(newParams) {
-        return OpenLayers.Layer.Grid.prototype.mergeNewParams.apply(
-            this, [OpenLayers.Util.upperCaseObject(newParams)]
-        );
+        if (this.requestEncoding.toUpperCase() === "KVP") {
+            return OpenLayers.Layer.Grid.prototype.mergeNewParams.apply(
+                this, [OpenLayers.Util.upperCaseObject(newParams)]
+            );
+        }
     },
 
     CLASS_NAME: "OpenLayers.Layer.WMTS"

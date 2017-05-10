@@ -1,4 +1,4 @@
-/* Copyright (c) 2006-2015 by OpenLayers Contributors (see authors.txt for
+/* Copyright (c) 2006-2013 by OpenLayers Contributors (see authors.txt for
  * full list of contributors). Published under the 2-clause BSD license.
  * See license.txt in the OpenLayers distribution or repository for the
  * full text of the license. */
@@ -352,7 +352,7 @@ OpenLayers.Layer.MapGuide = OpenLayers.Class(OpenLayers.Layer.Grid, {
         }
         var paramsString = OpenLayers.Util.getParameterString(allParams);
         
-        /* MapGuide needs '+' separating things like bounds/height/width.
+        /* MapGuide needs '+' seperating things like bounds/height/width.
            Since typically this is URL encoded, we use a slight hack: we
            depend on the list-like functionality of getParameterString to
            leave ',' only in the case of list items (since otherwise it is

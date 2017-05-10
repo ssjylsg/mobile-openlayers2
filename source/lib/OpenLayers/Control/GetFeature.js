@@ -1,4 +1,4 @@
-/* Copyright (c) 2006-2015 by OpenLayers Contributors (see authors.txt for
+/* Copyright (c) 2006-2013 by OpenLayers Contributors (see authors.txt for
  * full list of contributors). Published under the 2-clause BSD license.
  * See license.txt in the OpenLayers distribution or repository for the
  * full text of the license. */
@@ -239,7 +239,7 @@ OpenLayers.Control.GetFeature = OpenLayers.Class(OpenLayers.Control, {
         if(this.hover) {
             this.handlers.hover = new OpenLayers.Handler.Hover(
                 this, {'move': this.cancelHover, 'pause': this.selectHover},
-                OpenLayers.Util.applyDefaults(this.handlerOptions.hover, {
+                OpenLayers.Util.extend(this.handlerOptions.hover, {
                     'delay': 250,
                     'pixelTolerance': 2
                 })
@@ -557,7 +557,7 @@ OpenLayers.Control.GetFeature = OpenLayers.Class(OpenLayers.Control, {
      * Unselect all selected features.
      */
     unselectAll: function() {
-        // we'll want an option to suppress notification here
+        // we'll want an option to supress notification here
         for(var fid in this.features) {
             this.unselect(this.features[fid]);
         }

@@ -1,4 +1,4 @@
-/* Copyright (c) 2006-2015 by OpenLayers Contributors (see authors.txt for
+/* Copyright (c) 2006-2013 by OpenLayers Contributors (see authors.txt for
  * full list of contributors). Published under the 2-clause BSD license.
  * See license.txt in the OpenLayers distribution or repository for the
  * full text of the license. */
@@ -150,17 +150,13 @@ OpenLayers.Control.Geolocate = OpenLayers.Class(OpenLayers.Control, {
             this.map.getProjectionObject()
         );
         if (this.bind) {
-            this.map.setCenter(center,Math.ceil(this.map.maxZoom-2));
+            this.map.setCenter(center);
         }
         this.events.triggerEvent("locationupdated", {
-            position: {
-                lon:position.coords.longitude,
-                lat:position.coords.latitude
-            },
+            position: position,
             point: new OpenLayers.Geometry.Point(
                 center.lon, center.lat
-            ),
-            accuracy:position.coords.accuracy
+            )
         });
     },
 
@@ -168,7 +164,7 @@ OpenLayers.Control.Geolocate = OpenLayers.Class(OpenLayers.Control, {
      * APIMethod: getCurrentLocation
      *
      * Returns:
-     * {Boolean} Returns true if a event will be fired (successful
+     * {Boolean} Returns true if a event will be fired (successfull
      * registration)
      */
     getCurrentLocation: function() {

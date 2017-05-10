@@ -1,4 +1,4 @@
-/* Copyright (c) 2006-2015 by OpenLayers Contributors (see authors.txt for
+/* Copyright (c) 2006-2013 by OpenLayers Contributors (see authors.txt for
  * full list of contributors). Published under the 2-clause BSD license.
  * See license.txt in the OpenLayers distribution or repository for the
  * full text of the license. */
@@ -117,7 +117,7 @@ OpenLayers.Handler.Drag = OpenLayers.Class(OpenLayers.Handler, {
      *     the map.
      * callbacks - {Object} An object containing a single function to be
      *     called when the drag operation is finished. The callback should
-     *     expect to receive a single argument, the pixel location of the event.
+     *     expect to recieve a single argument, the pixel location of the event.
      *     Callbacks for 'move' and 'done' are supported. You can also speficy
      *     callbacks for 'down', 'up', and 'out' to respond to those events.
      * options - {Object} 
@@ -154,7 +154,6 @@ OpenLayers.Handler.Drag = OpenLayers.Class(OpenLayers.Handler, {
         var propagate = true;
         this.dragging = false;
         if (this.checkModifiers(evt) &&
-               this._pointerId == evt.pointerId &&
                (OpenLayers.Event.isLeftClick(evt) ||
                 OpenLayers.Event.isSingleTouch(evt))) {
             this.started = true;
@@ -177,7 +176,6 @@ OpenLayers.Handler.Drag = OpenLayers.Class(OpenLayers.Handler, {
 
             propagate = !this.stopDown;
         } else {
-            delete this._pointerId;
             this.started = false;
             this.start = null;
             this.last = null;
@@ -197,9 +195,8 @@ OpenLayers.Handler.Drag = OpenLayers.Class(OpenLayers.Handler, {
      */
     dragmove: function (evt) {
         this.lastMoveEvt = evt;
-        if (this.started && this._pointerId == evt.pointerId &&
-            !this.timeoutId && (evt.xy.x != this.last.x ||
-                                evt.xy.y != this.last.y)) {
+        if (this.started && !this.timeoutId && (evt.xy.x != this.last.x ||
+                                                evt.xy.y != this.last.y)) {
             if(this.documentDrag === true && this.documentEvents) {
                 if(evt.element === document) {
                     this.adjustXY(evt);
@@ -239,7 +236,7 @@ OpenLayers.Handler.Drag = OpenLayers.Class(OpenLayers.Handler, {
      * {Boolean} Let the event propagate.
      */
     dragend: function (evt) {
-        if (this.started && this._pointerId == evt.pointerId) {
+        if (this.started) {
             if(this.documentDrag === true && this.documentEvents) {
                 this.adjustXY(evt);
                 this.removeDocumentEvents();
@@ -247,7 +244,6 @@ OpenLayers.Handler.Drag = OpenLayers.Class(OpenLayers.Handler, {
             var dragged = (this.start != this.last);
             this.started = false;
             this.dragging = false;
-            delete this._pointerId;
             OpenLayers.Element.removeClass(
                 this.map.viewPortDiv, "olDragDown"
             );
@@ -343,11 +339,6 @@ OpenLayers.Handler.Drag = OpenLayers.Class(OpenLayers.Handler, {
      */
     touchstart: function(evt) {
         this.startTouch();
-        // only allow the first pointer event to be monitored by noting its pointerId
-        // which is unique in the pointer model (and undefined in the touch model)
-        if (!("_pointerId" in this)) {
-            this._pointerId = evt.pointerId;
-        }
         return this.dragstart(evt);
     },
 

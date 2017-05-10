@@ -1,4 +1,4 @@
-/* Copyright (c) 2006-2015 by OpenLayers Contributors (see authors.txt for
+/* Copyright (c) 2006-2013 by OpenLayers Contributors (see authors.txt for
  * full list of contributors). Published under the 2-clause BSD license.
  * See license.txt in the OpenLayers distribution or repository for the
  * full text of the license. */
@@ -157,7 +157,6 @@ OpenLayers.Control.OverviewMap = OpenLayers.Class(OpenLayers.Control, {
         this.layers = [];
         this.handlers = {};
         OpenLayers.Control.prototype.initialize.apply(this, [options]);
-        this.active = false;
     },
     
     /**
@@ -211,16 +210,7 @@ OpenLayers.Control.OverviewMap = OpenLayers.Class(OpenLayers.Control, {
             scope: this
         });
 
-        OpenLayers.Control.prototype.destroy.apply(this, arguments);
-    },
-
-    close: function() {
-        if (document.getElementById("copyright"))
-            document.getElementById("copyright").style.right = "5px";
-        if (document.getElementById("scale"))
-            document.getElementById("scale").style.right = "5px";
-        if (document.getElementById("MousePosition"))
-            document.getElementById("MousePosition").style.right = "5px";
+        OpenLayers.Control.prototype.destroy.apply(this, arguments);    
     },
 
     /**
@@ -401,13 +391,6 @@ OpenLayers.Control.OverviewMap = OpenLayers.Class(OpenLayers.Control, {
      */
     maximizeControl: function(e) {
         this.element.style.display = '';
-        if (document.getElementById("copyright"))
-            document.getElementById("copyright").style.right = "200px";
-        if (document.getElementById("scale"))
-            document.getElementById("scale").style.right = "200px";
-        if (document.getElementById("MousePosition"))
-            document.getElementById("MousePosition").style.right = "200px";
-
         this.showToggle(false);
         if (e != null) {
             OpenLayers.Event.stop(e);                                            
@@ -424,17 +407,10 @@ OpenLayers.Control.OverviewMap = OpenLayers.Class(OpenLayers.Control, {
      */
     minimizeControl: function(e) {
         this.element.style.display = 'none';
-        if (document.getElementById("copyright"))
-            document.getElementById("copyright").style.right = "25px";
-        if (document.getElementById("scale"))
-            document.getElementById("scale").style.right = "25px";
-        if (document.getElementById("MousePosition"))
-            document.getElementById("MousePosition").style.right = "25px";
         this.showToggle(true);
         if (e != null) {
             OpenLayers.Event.stop(e);                                            
         }
-        this.active = false;
     },
 
     /**
@@ -519,16 +495,8 @@ OpenLayers.Control.OverviewMap = OpenLayers.Class(OpenLayers.Control, {
         } else {
             center = this.map.center;
         }
-        var zoom = this.ovmap.getZoomForResolution(targetRes * this.resolutionFactor);
-        if (!this.map.isValidZoomLevel(zoom)) {
-
-            if (typeof this.map.minZoom == 'number') {
-                zoom = this.map.minZoom;
-            } else {
-                zoom = this.map.getZoom();
-            }
-        }
-        this.ovmap.setCenter(center, zoom);
+        this.ovmap.setCenter(center, this.ovmap.getZoomForResolution(
+            targetRes * this.resolutionFactor));
         this.updateRectToMap();
     },
     
@@ -538,15 +506,10 @@ OpenLayers.Control.OverviewMap = OpenLayers.Class(OpenLayers.Control, {
      */
     createMap: function() {
         // create the overview map
-        var options = OpenLayers.Util.extend({
-            controls: [],
-            // maxResolution: 'auto',
-            fallThrough: false
-        }, this.mapOptions);
+        var options = OpenLayers.Util.extend(
+                        {controls: [], maxResolution: 'auto', 
+                         fallThrough: false}, this.mapOptions);
         this.ovmap = new OpenLayers.Map(this.mapDiv, options);
-        var navigationControl = new OpenLayers.Control.Navigation();
-        navigationControl.zoomWheelEnabled = false;
-        this.ovmap.addControl(navigationControl);
         this.ovmap.viewPortDiv.appendChild(this.extentRectangle);
         
         // prevent ovmap from being destroyed when the page unloads, because
@@ -585,18 +548,15 @@ OpenLayers.Control.OverviewMap = OpenLayers.Class(OpenLayers.Control, {
         
         this.rectEvents = new OpenLayers.Events(this, this.extentRectangle,
                                                 null, true);
-        var self = this;
         this.rectEvents.register("mouseover", this, function(e) {
             if(!this.handlers.drag.active && !this.map.dragging) {
                 this.handlers.drag.activate();
             }
-            self.active = true;
         });
         this.rectEvents.register("mouseout", this, function(e) {
             if(!this.handlers.drag.dragging) {
                 this.handlers.drag.deactivate();
             }
-            self.active = false;
         });
 
         if (this.ovmap.getProjection() != this.map.getProjection()) {
@@ -608,29 +568,6 @@ OpenLayers.Control.OverviewMap = OpenLayers.Class(OpenLayers.Control, {
                 OpenLayers.INCHES_PER_UNIT[sourceUnits] /
                 OpenLayers.INCHES_PER_UNIT[targetUnits] : 1;
         }
-        this.ovmap.events.register('mouseover', this.ovmap, function(e) {
-            self.active = true;
-        });
-        this.ovmap.events.register('mouseout', this.ovmap, function(e) {
-            self.active = false;
-        });
-        this.ovmap.events.register('moveend', this.ovmap, function(e) {
-            if(!self.active){
-                return;
-            }
-            var omap = e.object;
-            var oCenter = omap.getCenter();
-            var center = self.map.getCenter();
-            // if (self.map.baseLayer.CLASS_NAME == 'OpenLayers.Layer.TMS_PGIS') {
-                if (oCenter.lon.toFixed(6) != center.lon.toFixed(6) || oCenter.lat.toFixed(6) != center.lat.toFixed(6)) {
-                    self.map.setCenter(oCenter);
-                }
-            // } else {
-            //     if (oCenter.lon != center.lon || oCenter.lat != center.lat) {
-            //         self.map.setCenter(oCenter);
-            //     }
-            // }
-        });
     },
         
     /**
@@ -683,7 +620,6 @@ OpenLayers.Control.OverviewMap = OpenLayers.Class(OpenLayers.Control, {
                              this.ovmap.size.w - this.wComp);
         var width = Math.max(right - left, 0);
         var height = Math.max(bottom - top, 0);
-        this.extentRectangle.style.display = '';
         if(width < this.minRectSize || height < this.minRectSize) {
             this.extentRectangle.className = this.displayClass +
                                              this.minRectDisplayClass;
@@ -694,16 +630,6 @@ OpenLayers.Control.OverviewMap = OpenLayers.Class(OpenLayers.Control, {
             this.extentRectangle.style.height = this.minRectSize + 'px';
             this.extentRectangle.style.width = this.minRectSize + 'px';
         } else {
-            if (height >= this.size.h || width + 2 >= this.size.w) {
-                height = this.size.h / 4;
-                width = this.size.w / 4;
-
-                top = this.size.h / 3;
-                left = this.size.w / 3;
-                this.extentRectangle.style.display = 'none';
-            }
-
-
             this.extentRectangle.className = this.displayClass +
                                              'ExtentRectangle';
             this.extentRectangle.style.top = Math.round(top) + 'px';

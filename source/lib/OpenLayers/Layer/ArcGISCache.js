@@ -1,4 +1,4 @@
-/* Copyright (c) 2006-2015 by OpenLayers Contributors (see authors.txt for
+/* Copyright (c) 2006-2013 by OpenLayers Contributors (see authors.txt for
  * full list of contributors). Published under the 2-clause BSD license.
  * See license.txt in the OpenLayers distribution or repository for the
  * full text of the license. */
@@ -47,87 +47,79 @@ OpenLayers.Layer.ArcGISCache = OpenLayers.Class(OpenLayers.Layer.XYZ, {
      */
     url: null,
     
-    /**
-     * APIProperty: tileOrigin
-     * {<OpenLayers.LonLat>} The location of the tile origin for the cache.
-     *     An ArcGIS cache has it's origin at the upper-left (lowest x value
-     *     and highest y value of the coordinate system).  The units for the
-     *     tile origin should be the same as the units for the cached data.
-     */
+   /**
+    * APIProperty: tileOrigin
+    * {<OpenLayers.LonLat>} The location of the tile origin for the cache.
+    *     An ArcGIS cache has it's origin at the upper-left (lowest x value
+    *     and highest y value of the coordinate system).  The units for the
+    *     tile origin should be the same as the units for the cached data.
+    */
     tileOrigin: null, 
    
-    /**
-     * APIProperty: tileSize
-     * {<OpenLayers.Size>} This size of each tile. Defaults to 256 by 256 pixels.
-     */
+   /**
+    * APIProperty: tileSize
+    * {<OpenLayers.Size>} This size of each tile. Defaults to 256 by 256 pixels.
+    */
     tileSize: new OpenLayers.Size(256, 256),
     
-    /**
-     * APIProperty: useArcGISServer
-     * {Boolean} Indicates if we are going to be accessing the ArcGIS Server (AGS)
-     *     cache via an AGS MapServer or directly through HTTP. When accessing via
-     *     AGS the path structure uses a standard z/y/x structure. But AGS actually
-     *     stores the tile images on disk using a hex based folder structure that looks
-     *     like "http://example.com/mylayer/L00/R00000000/C00000000.png".  Learn more
-     *     about this here:
-     *     http://blogs.esri.com/Support/blogs/mappingcenter/archive/2010/08/20/Checking-Your-Local-Cache-Folders.aspx
-     *     Defaults to true;
-     */    
+    zoomOffset: 0,
+   /**
+    * APIProperty: useAGS
+    * {Boolean} Indicates if we are going to be accessing the ArcGIS Server (AGS)
+    *     cache via an AGS MapServer or directly through HTTP. When accessing via
+    *     AGS the path structure uses a standard z/y/x structure. But AGS actually
+    *     stores the tile images on disk using a hex based folder structure that looks
+    *     like "http://example.com/mylayer/L00/R00000000/C00000000.png".  Learn more
+    *     about this here:
+    *     http://blogs.esri.com/Support/blogs/mappingcenter/archive/2010/08/20/Checking-Your-Local-Cache-Folders.aspx
+    *     Defaults to true;
+    */    
     useArcGISServer: true,
 
-    /**
-     * APIProperty: type
-     * {String} Image type for the layer.  This becomes the filename extension
-     *     in tile requests.  Default is "png" (generating a url like
-     *     "http://example.com/mylayer/L00/R00000000/C00000000.png").
-     */
+   /**
+    * APIProperty: type
+    * {String} Image type for the layer.  This becomes the filename extension
+    *     in tile requests.  Default is "png" (generating a url like
+    *     "http://example.com/mylayer/L00/R00000000/C00000000.png").
+    */
     type: 'png',
     
     /**
-     * APIProperty: useScales
-     * {Boolean} Optional override to indicate that the layer should use 'scale' information
-     *     returned from the server capabilities object instead of 'resolution' information.
-     *     This can be important if your tile server uses an unusual DPI for the tiles.
-     */
+    * APIProperty: useScales
+    * {Boolean} Optional override to indicate that the layer should use 'scale' information
+    *     returned from the server capabilities object instead of 'resolution' information.
+    *     This can be important if your tile server uses an unusual DPI for the tiles.
+    */
     useScales: false,
     
-    /**
-     * APIProperty: overrideDPI
-     * {Boolean} Optional override to change the OpenLayers.DOTS_PER_INCH setting based 
-     *     on the tile information in the server capabilities object.  This can be useful 
-     *     if your server has a non-standard DPI setting on its tiles, and you're only using 
-     *     tiles with that DPI.  This value is used while OpenLayers is calculating resolution
-     *     using scales, and is not necessary if you have resolution information. (This is
-     *     typically the case)  Regardless, this setting can be useful, but is dangerous
-     *     because it will impact other layers while calculating resolution.  Only use this
-     *     if you know what you are doing.  (See OpenLayers.Util.getResolutionFromScale)
-     */
+   /**
+    * APIProperty: overrideDPI
+    * {Boolean} Optional override to change the OpenLayers.DOTS_PER_INCH setting based 
+    *     on the tile information in the server capabilities object.  This can be useful 
+    *     if your server has a non-standard DPI setting on its tiles, and you're only using 
+    *     tiles with that DPI.  This value is used while OpenLayers is calculating resolution
+    *     using scales, and is not necessary if you have resolution information. (This is
+    *     typically the case)  Regardless, this setting can be useful, but is dangerous
+    *     because it will impact other layers while calculating resolution.  Only use this
+    *     if you know what you are doing.  (See OpenLayers.Util.getResolutionFromScale)
+    */
     overrideDPI: false,
-
-    /**
-     * APIProperty: hexZoom
-     * {Boolean} Should we hex encode the z values in the url?
-     * Default value is false.
-     */
-    hexZoom: false,
     
-    /**
-     * Constructor: OpenLayers.Layer.ArcGISCache 
-     * Creates a new instance of this class 
-     * 
-     * Parameters: 
-     * name - {String} 
-     * url - {String} 
-     * options - {Object} extra layer options
-     */ 
+   /**
+    * Constructor: OpenLayers.Layer.ArcGISCache 
+    * Creates a new instance of this class 
+    * 
+    * Parameters: 
+    * name - {String} 
+    * url - {String} 
+    * options - {Object} extra layer options
+    */ 
     initialize: function(name, url, options) { 
         OpenLayers.Layer.XYZ.prototype.initialize.apply(this, arguments);
 
         if (this.resolutions) {        
             this.serverResolutions = this.resolutions;
-            if (!this.maxExtent) {
-                this.maxExtent = this.getMaxExtentForResolution(this.resolutions[0]);
-            }
+            this.maxExtent = this.getMaxExtentForResolution(this.resolutions[0]);
         }
 
         // this block steps through translating the values from the server layer JSON 
@@ -215,19 +207,19 @@ OpenLayers.Layer.ArcGISCache = OpenLayers.Class(OpenLayers.Layer.XYZ, {
        }
     }, 
 
-    /** 
-     * Method: getContainingTileCoords
-     * Calculates the x/y pixel corresponding to the position of the tile
-     *     that contains the given point and for the for the given resolution.
-     * 
-     * Parameters:
-     * point - {<OpenLayers.Geometry.Point>} 
-     * res - {Float} The resolution for which to compute the extent.
-     * 
-     * Returns: 
-     * {<OpenLayers.Pixel>} The x/y pixel corresponding to the position 
-     * of the upper left tile for the given resolution.
-     */
+   /** 
+    * Method: getContainingTileCoords
+    * Calculates the x/y pixel corresponding to the position of the tile
+    *     that contains the given point and for the for the given resolution.
+    * 
+    * Parameters:
+    * point - {<OpenLayers.Geometry.Point>} 
+    * res - {Float} The resolution for which to compute the extent.
+    * 
+    * Returns: 
+    * {<OpenLayers.Pixel>} The x/y pixel corresponding to the position 
+    * of the upper left tile for the given resolution.
+    */
     getContainingTileCoords: function(point, res) {
         return new OpenLayers.Pixel(
            Math.max(Math.floor((point.x - this.tileOrigin.lon) / (this.tileSize.w * res)),0),
@@ -235,19 +227,19 @@ OpenLayers.Layer.ArcGISCache = OpenLayers.Class(OpenLayers.Layer.XYZ, {
         );
     },
     
-    /** 
-     * Method: calculateMaxExtentWithLOD
-     * Given a Level of Detail object from the server, this function
-     *     calculates the actual max extent
-     * 
-     * Parameters: 
-     * lod - {Object} a Level of Detail Object from the server capabilities object 
-             representing a particular zoom level
-     * 
-     * Returns: 
-     * {<OpenLayers.Bounds>} The actual extent of the tiles for the given zoom level
-     */
-    calculateMaxExtentWithLOD: function(lod) {
+   /** 
+    * Method: calculateMaxExtentWithLOD
+    * Given a Level of Detail object from the server, this function
+    *     calculates the actual max extent
+    * 
+    * Parameters: 
+    * lod - {Object} a Level of Detail Object from the server capabilities object 
+            representing a particular zoom level
+    * 
+    * Returns: 
+    * {<OpenLayers.Bounds>} The actual extent of the tiles for the given zoom level
+    */
+   calculateMaxExtentWithLOD: function(lod) {
         // the max extent we're provided with just overlaps some tiles
         // our real extent is the bounds of all the tiles we touch
 
@@ -260,22 +252,22 @@ OpenLayers.Layer.ArcGISCache = OpenLayers.Class(OpenLayers.Layer.XYZ, {
         var maxY = this.tileOrigin.lat - (lod.startTileRow * this.tileSize.h * lod.resolution);
         var minY = maxY - (numTileRows * this.tileSize.h * lod.resolution);
         return new OpenLayers.Bounds(minX, minY, maxX, maxY);
-    },
+   },
     
-    /** 
-     * Method: calculateMaxExtentWithExtent
-     * Given a 'suggested' max extent from the server, this function uses
-     *     information about the actual tile sizes to determine the actual
-     *     extent of the layer.
-     * 
-     * Parameters: 
-     * extent - {<OpenLayers.Bounds>} The 'suggested' extent for the layer
-     * res - {Float} The resolution for which to compute the extent.
-     * 
-     * Returns: 
-     * {<OpenLayers.Bounds>} The actual extent of the tiles for the given zoom level
-     */
-    calculateMaxExtentWithExtent: function(extent, res) {
+   /** 
+    * Method: calculateMaxExtentWithExtent
+    * Given a 'suggested' max extent from the server, this function uses
+    *     information about the actual tile sizes to determine the actual
+    *     extent of the layer.
+    * 
+    * Parameters: 
+    * extent - {<OpenLayers.Bounds>} The 'suggested' extent for the layer
+    * res - {Float} The resolution for which to compute the extent.
+    * 
+    * Returns: 
+    * {<OpenLayers.Bounds>} The actual extent of the tiles for the given zoom level
+    */
+   calculateMaxExtentWithExtent: function(extent, res) {
         var upperLeft = new OpenLayers.Geometry.Point(extent.left, extent.top);
         var bottomRight = new OpenLayers.Geometry.Point(extent.right, extent.bottom);
         var start = this.getContainingTileCoords(upperLeft, res);
@@ -288,20 +280,20 @@ OpenLayers.Layer.ArcGISCache = OpenLayers.Class(OpenLayers.Layer.XYZ, {
             endTileRow: end.y
         };
         return this.calculateMaxExtentWithLOD(lod);
-    },
+   },
     
     /** 
-     * Method: getUpperLeftTileCoord
-     * Calculates the x/y pixel corresponding to the position 
-     *     of the upper left tile for the given resolution.
-     * 
-     * Parameters: 
-     * res - {Float} The resolution for which to compute the extent.
-     * 
-     * Returns: 
-     * {<OpenLayers.Pixel>} The x/y pixel corresponding to the position 
-     * of the upper left tile for the given resolution.
-     */
+    * Method: getUpperLeftTileCoord
+    * Calculates the x/y pixel corresponding to the position 
+    *     of the upper left tile for the given resolution.
+    * 
+    * Parameters: 
+    * res - {Float} The resolution for which to compute the extent.
+    * 
+    * Returns: 
+    * {<OpenLayers.Pixel>} The x/y pixel corresponding to the position 
+    * of the upper left tile for the given resolution.
+    */
     getUpperLeftTileCoord: function(res) {
         var upperLeft = new OpenLayers.Geometry.Point(
             this.maxExtent.left,
@@ -310,17 +302,17 @@ OpenLayers.Layer.ArcGISCache = OpenLayers.Class(OpenLayers.Layer.XYZ, {
     },
 
     /** 
-     * Method: getLowerRightTileCoord
-     * Calculates the x/y pixel corresponding to the position 
-     *     of the lower right tile for the given resolution.
-     *  
-     * Parameters: 
-     * res - {Float} The resolution for which to compute the extent.
-     * 
-     * Returns: 
-     * {<OpenLayers.Pixel>} The x/y pixel corresponding to the position
-     * of the lower right tile for the given resolution.
-     */
+    * Method: getLowerRightTileCoord
+    * Calculates the x/y pixel corresponding to the position 
+    *     of the lower right tile for the given resolution.
+    *  
+    * Parameters: 
+    * res - {Float} The resolution for which to compute the extent.
+    * 
+    * Returns: 
+    * {<OpenLayers.Pixel>} The x/y pixel corresponding to the position
+    * of the lower right tile for the given resolution.
+    */
     getLowerRightTileCoord: function(res) {
         var bottomRight = new OpenLayers.Geometry.Point(
             this.maxExtent.right,
@@ -328,18 +320,18 @@ OpenLayers.Layer.ArcGISCache = OpenLayers.Class(OpenLayers.Layer.XYZ, {
         return this.getContainingTileCoords(bottomRight, res);
     },
     
-    /** 
-     * Method: getMaxExtentForResolution
-     * Since the max extent of a set of tiles can change from zoom level
-     *     to zoom level, we need to be able to calculate that max extent 
-     *     for a given resolution.
-     *
-     * Parameters: 
-     * res - {Float} The resolution for which to compute the extent.
-     * 
-     * Returns: 
-     * {<OpenLayers.Bounds>} The extent for this resolution
-     */ 
+   /** 
+    * Method: getMaxExtentForResolution
+    * Since the max extent of a set of tiles can change from zoom level
+    *     to zoom level, we need to be able to calculate that max extent 
+    *     for a given resolution.
+    *
+    * Parameters: 
+    * res - {Float} The resolution for which to compute the extent.
+    * 
+    * Returns: 
+    * {<OpenLayers.Bounds>} The extent for this resolution
+    */ 
     getMaxExtentForResolution: function(res) {
         var start = this.getUpperLeftTileCoord(res);
         var end = this.getLowerRightTileCoord(res);
@@ -355,16 +347,16 @@ OpenLayers.Layer.ArcGISCache = OpenLayers.Class(OpenLayers.Layer.XYZ, {
         return new OpenLayers.Bounds(minX, minY, maxX, maxY);
     },
     
-    /** 
-     * APIMethod: clone 
-     * Returns an exact clone of this OpenLayers.Layer.ArcGISCache
-     * 
-     * Parameters: 
-     * [obj] - {Object} optional object to assign the cloned instance to.
-     *  
-     * Returns: 
-     * {<OpenLayers.Layer.ArcGISCache>} clone of this instance 
-     */ 
+   /** 
+    * APIMethod: clone 
+    * Returns an exact clone of this OpenLayers.Layer.ArcGISCache
+    * 
+    * Parameters: 
+    * [obj] - {Object} optional object to assign the cloned instance to.
+    *  
+    * Returns: 
+    * {<OpenLayers.Layer.ArcGISCache>} clone of this instance 
+    */ 
     clone: function (obj) { 
         if (obj == null) { 
             obj = new OpenLayers.Layer.ArcGISCache(this.name, this.url, this.options);
@@ -411,21 +403,21 @@ OpenLayers.Layer.ArcGISCache = OpenLayers.Class(OpenLayers.Layer.XYZ, {
         return this._tileOrigin;
     },
 
-    /**
-     * Method: getURL
-     * Determine the URL for a tile given the tile bounds.  This is should support
-     *     urls that access tiles through an ArcGIS Server MapServer or directly through
-     *     the hex folder structure using HTTP.  Just be sure to set the useArcGISServer
-     *     property appropriately!  This is basically the same as 
-     *     'OpenLayers.Layer.TMS.getURL',  but with the addition of hex addressing,
-     *     and tile rounding.
-     *
-     * Parameters:
-     * bounds - {<OpenLayers.Bounds>}
-     *
-     * Returns:
-     * {String} The URL for a tile based on given bounds.
-     */
+   /**
+    * Method: getURL
+    * Determine the URL for a tile given the tile bounds.  This is should support
+    *     urls that access tiles through an ArcGIS Server MapServer or directly through
+    *     the hex folder structure using HTTP.  Just be sure to set the useArcGISServer
+    *     property appropriately!  This is basically the same as 
+    *     'OpenLayers.Layer.TMS.getURL',  but with the addition of hex addressing,
+    *     and tile rounding.
+    *
+    * Parameters:
+    * bounds - {<OpenLayers.Bounds>}
+    *
+    * Returns:
+    * {String} The URL for a tile based on given bounds.
+    */
     getURL: function (bounds) {
         var res = this.getResolution(); 
 
@@ -434,26 +426,26 @@ OpenLayers.Layer.ArcGISCache = OpenLayers.Class(OpenLayers.Layer.XYZ, {
         var originTileY = (this.tileOrigin.lat - (res * this.tileSize.h/2));
 
         var center = bounds.getCenterLonLat();
-        // var point = {
-        //     x: center.lon,
-        //     y: center.lat
-        // };
-        var x = (Math.round(Math.abs((center.lon - originTileX) / (res * this.tileSize.w))));
-        var y = (Math.round(Math.abs((originTileY - center.lat) / (res * this.tileSize.h))));
-        var z = this.map.getZoom();
+        var point = { x: center.lon, y: center.lat };
+        var x = (Math.round(Math.abs((center.lon - originTileX) / (res * this.tileSize.w)))); 
+        var y = (Math.round(Math.abs((originTileY - center.lat) / (res * this.tileSize.h)))); 
+        var z = this.map.getZoom() + (this.zoomOffset || 0);
 
         // this prevents us from getting pink tiles (non-existant tiles)
         if (this.lods) {        
             var lod = this.lods[this.map.getZoom()];
-            if ((x < lod.startTileCol || x > lod.endTileCol) || (y < lod.startTileRow || y > lod.endTileRow)) {
-                return null;
+            if ((x < lod.startTileCol || x > lod.endTileCol) 
+                || (y < lod.startTileRow || y > lod.endTileRow)) {
+                    return null;
             }
-        } else {
-            // var start = this.getUpperLeftTileCoord(res);
-            // var end = this.getLowerRightTileCoord(res);
-            // if ((x < start.x || x >= end.x) || (y < start.y || y >= end.y)) {
-            //     return null;
-            // }
+        }
+        else {
+            var start = this.getUpperLeftTileCoord(res);
+            var end = this.getLowerRightTileCoord(res);
+            if ((x < start.x || x >= end.x)
+                || (y < start.y || y >= end.y)) {
+                    return null;
+            }        
         }
 
         // Construct the url string
@@ -471,11 +463,10 @@ OpenLayers.Layer.ArcGISCache = OpenLayers.Class(OpenLayers.Layer.XYZ, {
             url = url + '/tile/${z}/${y}/${x}';
         } else {
             // The tile images are stored using hex values on disk.
-            // x = 'C' + OpenLayers.Number.zeroPad(x, 8, 16);
-            // y = 'R' + OpenLayers.Number.zeroPad(y, 8, 16);
-            // z = 'L' + OpenLayers.Number.zeroPad(z, 2, 10);
-            //url = url + '/tile/${z}/${y}/${x}.' + this.type;
-            return url + '/L' +z.toString().padLeft('0',2) + "/R" + y.toString(16).padLeft('0',8) + "/C" + x.toString(16).padLeft('0',8) + '.' + this.type;
+            x = 'C' + OpenLayers.Number.zeroPad(x, 8, 16);
+            y = 'R' + OpenLayers.Number.zeroPad(y, 8, 16);
+            z = 'L' + OpenLayers.Number.zeroPad(z, 2, 10);
+            url = url + '/${z}/${y}/${x}.' + this.type;
         }
 
         // Write the values into our formatted url
@@ -487,4 +478,4 @@ OpenLayers.Layer.ArcGISCache = OpenLayers.Class(OpenLayers.Layer.XYZ, {
     },
 
     CLASS_NAME: 'OpenLayers.Layer.ArcGISCache' 
-});
+}); 

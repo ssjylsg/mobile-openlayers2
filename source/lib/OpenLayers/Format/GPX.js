@@ -1,4 +1,4 @@
-/* Copyright (c) 2006-2015 by OpenLayers Contributors (see authors.txt for
+/* Copyright (c) 2006-2013 by OpenLayers Contributors (see authors.txt for
  * full list of contributors). Published under the 2-clause BSD license.
  * See license.txt in the OpenLayers distribution or repository for the
  * full text of the license. */
@@ -376,7 +376,7 @@ OpenLayers.Format.GPX = OpenLayers.Class(OpenLayers.Format.XML, {
         node.appendChild(name);
         var desc = this.createElementNS(this.namespaces.gpx, 'desc');
         desc.appendChild(this.createTextNode(
-            feature.attributes.description || feature.attributes.desc || this.defaultDesc));
+            feature.attributes.description || this.defaultDesc));
         node.appendChild(desc);
         // TBD - deal with remaining (non name/description) attributes.
     },

@@ -1,4 +1,4 @@
-/* Copyright (c) 2006-2015 by OpenLayers Contributors (see authors.txt for
+/* Copyright (c) 2006-2013 by OpenLayers Contributors (see authors.txt for
  * full list of contributors). Published under the 2-clause BSD license.
  * See license.txt in the OpenLayers distribution or repository for the
  * full text of the license. */
@@ -286,7 +286,7 @@ OpenLayers.Geometry.LinearRing = OpenLayers.Class(
                         (2 + Math.sin(OpenLayers.Util.rad(p1.y)) +
                         Math.sin(OpenLayers.Util.rad(p2.y)));
             }
-            area = area * OpenLayers.Util.VincentyConstants.a * OpenLayers.Util.VincentyConstants.a / 2.0;
+            area = area * 6378137.0 * 6378137.0 / 2.0;
         }
         return area;
     },
