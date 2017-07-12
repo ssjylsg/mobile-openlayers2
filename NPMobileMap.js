@@ -1,6 +1,6 @@
 window.NPMobile = {
     ISPOINTCONVERT: true,
-    VERSION: '1.1.0',
+    VERSION: '1.3.1',
     inherits: function(childCtor, parentCtor) {
         var p = parentCtor.prototype;
         var c = childCtor.prototype;
@@ -123,7 +123,7 @@ NPMobile.Layers.Layer.prototype = {
      * @param {Boolean}   display  
      */
     display: function(display) {
-        this._layer.display(display);
+        this._layer.setVisibility(display);
     },
     getId: function() {
         return this.id;
@@ -394,6 +394,7 @@ NPMobile.Layers.ClusterLayer = function(name, opts) {
                 }
                 var clusters = f.layer;
                 if (f.cluster && f.cluster.length > 1) {
+                    f.layer.map.setCenter(f.layer.map.getCenter(), f.layer.map.getZoom() + 1)
                     return;
                 }
                 var clientData;
@@ -661,6 +662,58 @@ NPMobile.Geometry.MultiPolygon = function() {
 };
 NPMobile.inherits(NPMobile.Geometry.MultiPolygon, NPMobile.Geometry.Curve);
 
+
+/**
+ * @class NPMobile.Geometry.Circle
+ * @extends {NPMobile.Geometry.Curve}
+ * @constructor
+ * @param {NPMobile.Geometry.Point} 中心点
+ * @param {number} radius 半径
+ * @param {object} style  线段样式
+ * @param {string} style.fillColor    默认red
+ * @param {number} style.fillOpacity 1
+ * @param {number} style.strokeWidth    默认1
+ * @param {string} style.strokeDashstyle [dot | dash | dashdot | longdash | longdashdot | solid]
+ * @param {number} style.pointRadius 默认6
+ * @param {string} style.strokeLinecap [butt | round | square]
+ */
+NPMobile.Geometry.Circle = function(center, radius, style) {
+    NPMobile.Geometry.Curve.call(center, style);
+    style = NPMobile.Util.extend(style, {
+        fill: true,
+        fillColor: '#ee9900',
+        fillOpacity: 0.5,
+        strokeColor: 'red',
+        strokeWidth: 1,
+        strokeOpacity: 0.5,
+        pointRadius: 6,
+        label: ''
+    });
+    window.NPMobileHelper._map && (radius = window.NPMobileHelper._map.getDistanceByProjection(radius));
+    center = NPMobile.T.setPoint(null, center);
+    var pg = OpenLayers.Geometry.Polygon.createRegularPolygon(new OpenLayers.Geometry.Point(center.lon, center.lat), radius, 60, 10);
+    this._vector = new OpenLayers.Feature.Vector(pg, this, style);
+};
+NPMobile.inherits(NPMobile.Geometry.Circle, NPMobile.Geometry.Curve);
+
+NPMobile.Geometry.Circle.prototype = {
+    getWKT: function() {
+        var f = new OpenLayers.Format.WKT();
+        f.extract.point = function(e) {
+            e = NPMobile.T.getPoint(null, {
+                lon: e.x,
+                lat: e.y
+            })
+            return e.lon + " " + e.lat
+        }
+        return f.write(this._vector);
+    },
+    beforeadded: function() {
+
+    }
+}
+
+
 /**
  * Point
  * @class  NPMobile.Geometry.Point
@@ -843,6 +896,35 @@ NPMobile.Map = function(mapContainer, mapInfo) {
         this._map.originCenter = [ep.lon, ep.lat];
     }
 
+    this._map.events.on({
+        "zoomstart": function() {
+            for (var i = 0; i < this.layers.length; i++) {
+                if (this.layers[i].isBaseLayer) {
+                    continue;
+                }
+                if (this.layers[i].CLASS_NAME == 'OpenLayers.Layer.OSM' || this.layers[i].CLASS_NAME == 'OpenLayers.Layer.Baidu') {
+                    this.layers[i].clearGrid();
+                }
+                if (this.layers[i].visibility) {
+                    this.layers[i].setVisibility(false);
+                    this.layers[i].clusterVisable = false;
+                }
+            }
+        },
+        "zoomend": function() {
+            for (var i = 0; i < this.layers.length; i++) {
+                if (this.layers[i].isBaseLayer) {
+                    continue;
+                }
+                if (this.layers[i].clusterVisable === false) {
+                    this.layers[i].setVisibility(true);
+                    this.layers[i].clusterVisable = true;
+                }
+            }
+        },
+        scope: this._map
+    });
+
     this.fullExtent(mapInfo.mapOpts.zoom);
 
     this._defaultLayer.events.register("featureclick", this, function(e) {
@@ -974,17 +1056,18 @@ NPMobile.Map.prototype = {
      * @param  {functon} listener      
      */
     register: function(type, listener) {
-        if (type === 'click' && listener) {
+        if ((type === 'click' || type === 'touchend') && listener) {
             var clickFun = function(f) {
                 try {
-                    listener(NPMobile.T.getPoint(this, this.getLonLatFromLayerPx(f.xy)));
+                    var c = NPMobile.T.getPoint(this, this.getLonLatFromPixel(f.xy));
+                    listener(c.lon + "", c.lat + "");
                 } catch (e) {
 
                 }
                 return false;
             };
             this._events["_" + type] = clickFun;
-            this._map.events.register('click', this._map, clickFun);
+            this._map.events.register(type, this._map, clickFun);
         } else {
             this._events["_" + type] = listener;
         }
@@ -1002,8 +1085,8 @@ NPMobile.Map.prototype = {
      * @param  {string} type     事件类型 click     
      */
     unregister: function(type) {
-        if (type === 'click') {
-            this._map.events.unregister('click', this._map, this._events["_" + type]);
+        if (type === 'click' || type === 'touchend') {
+            this._map.events.unregister(type, this._map, this._events["_" + type]);
         }
         this._events["_" + type] = null;
     },
@@ -1126,11 +1209,11 @@ NPMobile.Map.prototype = {
                             maxResolution: 262144,
                             isVectorLayer: self.isVectorLayer
                         };
-                        if(layer.layerOpt.layerInfo.layerType === "baiduVector"){
+                        if (layer.layerOpt.layerInfo.layerType === "baiduVector") {
                             self._opts.isVectorLayer = true;
                             url += "&format=jsonp";
                         }
-                        newLayer = new OpenLayers.Layer.Baidu(layer.layerName,url, self._opts);
+                        newLayer = new OpenLayers.Layer.Baidu(layer.layerName, url, self._opts);
                         break;
                     case "streetmap":
                     case "NPMapLib.Layers.OSMLayer":
@@ -1168,8 +1251,8 @@ NPMobile.Map.prototype = {
                     case 'NPMapLib.Layers.GaoDeLayer':
 
                         newLayer = new OpenLayers.Layer.gaode(layer.layerName, url, self);
-                        break;              
-                        
+                        break;
+
                     case 'NPMapLib.Layers.BaiduTileLayer':
                         self.tileOrigin = new OpenLayers.LonLat(0, 0);
                         self.maxResolution = 262144;
@@ -1313,6 +1396,18 @@ NPMobile.Map.prototype = {
         return this._map.getZoom();
     },
     /**
+     * 平面距离转为地图对应的距离
+     * @param  {number} distance [description]
+     * @return {number}          [description]
+     */
+    getDistanceByProjection: function(distance) {
+        var mapUnit = this._map.units;
+        if (mapUnit == 'm') {
+            return distance;
+        }
+        return distance * OpenLayers.INCHES_PER_UNIT['m'] / OpenLayers.INCHES_PER_UNIT['degrees'];
+    },
+    /**
      * 创建标注 
      * @param  {NPMobile.Geometry.Point}   point      [坐标点]
      * @param  {object}  markerParam
@@ -1340,6 +1435,9 @@ NPMobile.Map.prototype = {
         }, style);
         this._defaultLayer.addFeatures([vector]);
         vector._click = clickFun;
+    },
+    getVersion: function() {
+        return NPMobile.VERSION;
     }
 };
 (function() {
@@ -1722,6 +1820,9 @@ window.NPMobileHelper = {
         }
         var result = null;
         switch (obj.className) {
+            case 'Circle':
+                result = new NPMobile.Geometry.Circle(obj.center, obj.radius, obj.style);
+                break;
             case 'NPMobile.Tool.Measure':
                 result = new NPMobile.Tool.Measure(this._objs[obj.map.id]);
                 break;
@@ -1818,7 +1919,7 @@ window.NPMobileHelper = {
             }
         }
         if (args[0] === 'register' || args[0] === 'unregister') {
-            np[args[0]](methodArgs[0], function() {
+            np[methodArgs[0]] = np[methodArgs[0]] || function() {
                 var data = {
                     id: np.id,
                     eventType: methodArgs[0],
@@ -1830,7 +1931,8 @@ window.NPMobileHelper = {
 
                     }
                 );
-            });
+            };
+            np[args[0]](methodArgs[0], np[methodArgs[0]]);
             return "";
         }
         // if (args[0] === 'setMode') {

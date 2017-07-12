@@ -1,33 +1,29 @@
-{
-    "mapOpts": {
-        "minZoom": 6,
-        "defaultZoom": 11,
-        "maxZoom": 18,
-        "centerPoint": [116.39322, 39.91043],
-        "projection": "EPSG:900913"
-    },
-    "vectorLayer": [{
-        "layerName": "shanghaiBaseMap1",
-        "layerType": "NPMapLib.Layers.BaiduTileLayer",
-        "layerOpt": {
-            "url": ["http://mapor1.bdimg.com/tile/?qt=tile&x=${x}&y=${y}&z=${z}&styles=pl&udt=20170101&scaler=2",
-                "http://mapor1.bdimg.com/tile/?qt=tile&x=${x}&y=${y}&z=${z}&styles=pl&udt=20170101&scaler=2",
-                "http://mapor0.bdimg.com/tile/?qt=tile&x=${x}&y=${y}&z=${z}&styles=pl&udt=20170101&scaler=2"
-            ],
-            "isBaseLayer": true,
-            "mapTyp": "EMap"
-        }
-    }, {
-        "layerName": "trafficLayer",
-        "layerType": "NPMapLib.Layers.BaiduTileLayer",
-        "layerOpt": {
-            "url": [
-            	"http://its.map.baidu.com:8002/traffic/TrafficTileService?level=${z}&x=${x}&y=${y}&time=1486951723098&v=081&smallflow=1&scaler=2"
-               
-            ],
-            "isBaseLayer": false,
-            "mapTyp": "EMap"
-        }
-    }],
-    "sattilateLayer": []
-}
+ {
+     "mapOpts": {
+         "minZoom": 6,
+         "defaultZoom": 11,
+         "maxZoom": 22,
+         "centerPoint": [101.70695888254238,3.151194507562581],
+         "projection": "EPSG:900913"
+     },
+     "vectorLayer": [{
+         "layerName": "vectorBack",
+         "layerType": "NPMapLib.Layers.OSMLayer",
+         "layerOpt": {
+             "url": ["http://www.google.cn/maps/vt?pb=!1m5!1m4!1i${z}!2i${x}!3i${y}!4i256!2m3!1e0!2sm!3i384078192!3m14!2szh-Hans-EN!3sEN!5e78!12m4!1e68!2m2!1sset!2sRoadmap!12m3!1e37!2m1!1ssmartmaps!12m1!1e3!4e0"],
+             "isChina": false,
+             "isBaseLayer": true,
+             "numZoomLevels": 23
+         }
+     }, {
+         "layerName": "vectorText",
+         "layerType": "NPMapLib.Layers.OSMLayer",
+         "layerOpt": {
+             "url": ["http://www.google.cn/maps/vt?pb=!1m5!1m4!1i${z}!2i${x}!3i${y}!4i256!2m3!1e0!2sm!3i384077664!3m14!2szh-Hans-EN!3sEN!5e78!12m4!1e68!2m2!1sset!2sRoadmap!12m3!1e37!2m1!1ssmartmaps!12m1!1e18!4e0!5m1!5f2"],
+             "isChina": false,
+             "isBaseLayer": false,
+             "numZoomLevels": 23
+         }
+     }],
+     "sattilateLayer": []
+ }

@@ -14,7 +14,7 @@ gulp.task('clean', function(cb) {
     del(['./dist/**'], cb);
 });
 
-gulp.task('minifyjs', function() {
+gulp.task('release', function() {
     var lib = [
         'OpenLayers/SingleFile.js',
         'OpenLayers/BaseTypes/Class.js',
@@ -112,6 +112,7 @@ gulp.task('minifyjs', function() {
         'OpenLayers/Filter/Comparison.js',
         'OpenLayers/Format/Filter.js',
         'OpenLayers/Filter/Function.js',
+        'OpenLayers/Format/WKT.js',
         'OpenLayers/Format/Filter/v1.js',
         'OpenLayers/Format/Filter/v1_0_0.js',
         'OpenLayers/Format/WFST/v1_0_0.js',
@@ -155,7 +156,7 @@ gulp.task('watch', function() {
         gulp.src(['NPMobileMap.js', 'measure.js'])
             .pipe(concat('NPMobileMap.js'))
             .pipe(rename('NPMobileMap.js'))
-            //.pipe(uglify())
+            .pipe(uglify())
             .pipe(gulp.dest('./dist/'));
     });
 });
