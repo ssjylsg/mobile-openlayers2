@@ -15,14 +15,14 @@
         height: 100%;
         width: 100%;
     }
-    
+
     @media only screen and (max-width: 600px) {
         html,
         body {
             height: 117%;
         }
     }
-    
+
     .olControlAttribution {
         position: absolute;
         font-size: 10px;
@@ -33,7 +33,7 @@
         padding: 2px 4px;
         border-radius: 5px 0 0 0;
     }
-    
+
     #viewerContainer {
         width: 100%;
         position: absolute;
@@ -44,18 +44,18 @@
 
 <body>
     <!-- <div> -->
-        <div id="viewerContainer"></div>
-     <!--    <div id="iploc" class="ipLocCont BMap_noprint anchorBR" style="position: absolute; z-index: 10; bottom: 50px; right: 10px; top: auto; left: auto;display:none">
+    <div id="viewerContainer"></div>
+    <!--    <div id="iploc" class="ipLocCont BMap_noprint anchorBR" style="position: absolute; z-index: 10; bottom: 50px; right: 10px; top: auto; left: auto;display:none">
             <div class="titleComm title hide">定位您的位置</div>
             <div class="hide titleComm loading-button">定位中</div>
             <div class="hide titleComm titleFailed">定位失败</div>
             <div class="icon"> <span class="success">        </span> </div>
         </div> -->
-   <!--  </div> -->
+    <!--  </div> -->
     <script src="WebViewJavascriptBridge.js"></script>
     <script src="jquery.js"></script>
-     <script src="OpenLayers.js"></script>
-   <!--  <script src="../source/lib/OpenLayers.js"></script> -->
+    <script src="OpenLayers.js"></script>
+    <!--  <script src="../source/lib/OpenLayers.js"></script> -->
     <script src="NPMobileMap.js"></script>
     <script src="json2.js"></script>
     <script type="text/javascript">
@@ -92,7 +92,25 @@
         });
     });
 
-     
+    $(function() {
+        $.ajaxSettings.async = true;
+        var url = window.location.href.split('?').slice(1);
+        if (url.length > 0) {
+            url = url[0].split('&');
+            for (var i = url.length - 1; i >= 0; i--) {
+                if (url[i].split('=')[0] == 'q') {
+                    url = decodeURIComponent(url[i].split('=')[1]);
+                    break;
+                }
+            }
+            console.log("预加载请求数据开始时间" + (new Date()).getTime())
+            window.httpRequest = $.getJSON(url || 'data.json', function(result) {
+                window.NPMobileHelper._clusterParmeters = result;
+                delete window.httpRequest;
+                console.log("预加载请求数据结束时间" + (new Date()).getTime())
+            })
+        }
+    })
     </script>
 </body>
 
