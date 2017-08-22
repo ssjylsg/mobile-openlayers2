@@ -99,6 +99,25 @@
             responseCallback(NPMobileHelper.callMethod.apply(NPMobileHelper, data));
         });
     });
+    $(function() {
+        $.ajaxSettings.async = true;
+        var url = window.location.href.split('?').slice(1);
+        if (url.length > 0) {
+            url = url[0].split('&');
+            for (var i = url.length - 1; i >= 0; i--) {
+                if (url[i].split('=')[0] == 'q') {
+                    url = decodeURIComponent(url[i].split('=')[1]);
+                    break;
+                }
+            }
+            console.log("预加载请求数据开始时间" + (new Date()).getTime())
+            window.httpRequest = $.getJSON(url || 'data.json', function(result) {
+                window.NPMobileHelper._clusterParmeters = result;
+                delete window.httpRequest;
+                console.log("预加载请求数据结束时间" + (new Date()).getTime())
+            })
+        }
+    })
     $("#test").click(function() {
         var data = {
             id: 1,
