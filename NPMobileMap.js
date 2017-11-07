@@ -1,6 +1,6 @@
 window.NPMobile = {
     ISPOINTCONVERT: true,
-    VERSION: '1.3.1',
+    VERSION: '1.4.2',
     inherits: function(childCtor, parentCtor) {
         var p = parentCtor.prototype;
         var c = childCtor.prototype;
@@ -29,25 +29,25 @@ window.NPMobile = {
     Logger.prototype = {
         log: function(level, msg) {
             if (this.level <= level) {
-                try {
-                    switch (level) {
-                        case Level.DEBUG:
-                            console.debug(msg);
-                            break;
-                        case Level.ERROR:
-                            console.error(msg);
-                            break;
-                        case Level.WARN:
-                            console.warn(msg);
-                            break;
-                        default:
-                            console.log(msg);
-                            break;
-                    }
+                // try {
+                //     switch (level) {
+                //         case Level.DEBUG:
+                //             console.debug(msg);
+                //             break;
+                //         case Level.ERROR:
+                //             console.error(msg);
+                //             break;
+                //         case Level.WARN:
+                //             console.warn(msg);
+                //             break;
+                //         default:
+                //             console.log(msg);
+                //             break;
+                //     }
 
-                } catch (ex) {
+                // } catch (ex) {
 
-                }
+                // }
             }
         },
         trace: function(msg) {
@@ -591,8 +591,123 @@ NPMobile.Layers.ClusterLayer.prototype = {
             });
             // this._markers = [];
         }
-
     },
+    /**
+     * 批量数据加载
+     * @param {object}  markerList    
+     * @param {Boolean} isComplete
+     */
+    addOverlayList: function(markerList, isComplete) {
+        var markers = markerList.list;
+        var image = markerList.defaultUrl;
+        for (var i = 0; i < markers.length; i++) {
+            markers[i].image || (markers[i].image = image)
+            var m = new NPMobile.Geometry.ClusterMarker({
+                lon: markers[i].lon || markers[i].longitude,
+                lat: markers[i].lat || markers[i].latitude
+            }, null, markers[i]);
+            m.id = markers[i].id;
+            window.NPMobileHelper.pushObj(m);
+            if (!this._layer.showMarker[m.markType]) {
+                this._layer.showMarker[m.markType] = true;
+            }
+            this._markers.push(m);
+        }
+        if (isComplete) {
+            this._layer.removeAllFeatures();
+            this._layer.events.triggerEvent("beforefeaturesadded", {
+                features: this._markers.slice()
+            });
+            this._markers = [];
+        }
+        var data = {
+            id: this.id,
+            eventType: "success",
+            args: [this.id]
+        };
+        window.WebViewJavascriptBridge.callHandler(
+            'NPMobileHelper.Event.Call', data,
+            function(responseData) {
+
+            }
+        );
+        console.log((new Date()).getTime())
+    },
+    /**
+     * 移动端请求大数据
+     * @param {object} mobileObj
+     * @param {string} mobileObj.url
+     * @param {object} mobileObj.defaultImage 
+     */
+    addOverlaysForMobile: function(mobileObj) {
+        var that = this;
+        console.log((new Date()).getTime())
+        if (window.httpRequest) {
+            window.httpRequest.abort();
+        }
+        if (window.NPMobileHelper._clusterParmeters) {
+            var result = window.NPMobileHelper._clusterParmeters;
+            console.log((new Date()).getTime() + "预加载");
+            if (result.code == 0) {
+                that.addOverlayList({
+                    list: result.data.channel,
+                    defaultUrl: mobileObj.defaultImage || {
+                        url: 'img/Flag.png',
+                        imageSize: {
+                            w: 32,
+                            h: 32
+                        }
+                    }
+                }, true);
+            }
+            delete window.NPMobileHelper._clusterParmeters;
+            return;
+        }
+        console.log('开始请求数据');
+        $.ajaxSettings.async = true;
+        $.getJSON(mobileObj.url, function(result) {
+            console.log((new Date()).getTime())
+            console.log('请求数据结束：' + result.code);
+            if (result.code == 0) {
+                that.addOverlayList({
+                    list: result.data.channel,
+                    defaultUrl: mobileObj.defaultImage || {
+                        url: 'img/Flag.png',
+                        imageSize: {
+                            w: 32,
+                            h: 32
+                        }
+                    }
+                }, true);
+            } else {
+                var data = {
+                    id: that.id,
+                    eventType: "error",
+                    args: ['异常',result.code]
+                };
+                window.WebViewJavascriptBridge.callHandler(
+                    'NPMobileHelper.Event.Call', data,
+                    function(responseData) {
+
+                    }
+                );
+                console.log('异常' + (new Date()).getTime())
+            }
+        }).fail(function(err) {
+            console.log('数据请求失败');
+            var data = {
+                id: that.id,
+                eventType: "error",
+                args: [err.statusText || '失败']
+            };
+            window.WebViewJavascriptBridge.callHandler(
+                'NPMobileHelper.Event.Call', data,
+                function(responseData) {
+
+                }
+            );
+        });
+    }
 
 };
 NPMobile.inherits(NPMobile.Layers.ClusterLayer, NPMobile.Layers.Layer);
@@ -1436,9 +1551,16 @@ NPMobile.Map.prototype = {
         this._defaultLayer.addFeatures([vector]);
         vector._click = clickFun;
     },
+    /**
+     * 获取版本号
+     * @return {string}
+     */
     getVersion: function() {
         return NPMobile.VERSION;
-    }
+    },
+    saveClusterParmeters: function(obj) {
+        window.NPMobileHelper._clusterParmeters = obj;
+    },
 };
 (function() {
     var coordHelper = (function() {
@@ -1677,10 +1799,11 @@ NPMobile.Map.prototype = {
             }
         },
         ToLL: function(b) {
-            b.lng = b.lon;
-            var c;
+             b.lng = b.lon;
+            var c,
+                e = new H(Math.abs(b.lng), Math.abs(b.lat));
             for (var i = 0; i < this.lG.length; i++) {
-                if (b.lat >= this.lG[i]) {
+                if (e.lat >= this.lG[i]) {
                     c = this.fP[i];
                     break;
                 }
@@ -1811,6 +1934,7 @@ NPMobile.Map.prototype = {
 
 window.NPMobileHelper = {
     _map: null,
+    _clusterParmeters: null,
     _objs: {
 
     },
@@ -1894,7 +2018,9 @@ window.NPMobileHelper = {
         this._objs[obj.id] = result;
         return result;
     },
-
+    pushObj: function(obj) {
+        obj && obj.id && (this._objs[obj.id] = obj)
+    },
     callMethod: function() {
         var args = Array.prototype.slice.call(arguments),
             obj = args.shift();
