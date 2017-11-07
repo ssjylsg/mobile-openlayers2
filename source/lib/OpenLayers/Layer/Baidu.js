@@ -109,10 +109,15 @@ OpenLayers.Layer.Baidu = OpenLayers.Class(OpenLayers.Layer.TileCache, {
         var bx = Math.round((bounds.left - this.tileOrigin.lon) / (res * size.w));
         var by = Math.round((bounds.bottom - this.tileOrigin.lat) / (res * size.h)) + (isRemove ? 0 : 0);
         tilez = tilez + 1;
+        var x, y;
+        if (this.gloableUrl) {
+            x = bx.toString();
+            y = by.toString();
 
-        var x = bx.toString().replace("-", "M");
-        var y = by.toString().replace("-", "M");
-
+        } else {
+            x = bx.toString().replace("-", "M");
+            y = by.toString().replace("-", "M");
+        }
         var urlsNum = Math.abs((bx + by) % this.url.length);
         return OpenLayers.String.format(this.url[urlsNum], {
             'x': x,
