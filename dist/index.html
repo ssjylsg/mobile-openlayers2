@@ -194,7 +194,7 @@
             });
 
             map.addLayer(clusterLayer);
-            for (var i = 0; i < 6; i++) {
+            for (var i = 0; i < 40000; i++) {
                 markers.push(new NPMobile.Geometry.ClusterMarker(new NPMobile.Geometry.Point(c.lon + Math.random() * Math.pow(-1, i) * 0.01, c.lat + Math.random() * Math.pow(-1, i + 1) * 0.01)));
             }
             clusterLayer.addOverlays(markers, true);
@@ -233,36 +233,40 @@
         mapClick: function() {
             var that = this;
             map.register('touchend', function(lon, lat) {
-                //  that.showMsg(lon + ";" + lat);
+                that.showMsg(lon + ";" + lat);
                 var c = new NPMobile.Geometry.Circle({
                     lon: lon,
                     lat: lat
                 }, 10000);
                 map.addOverlay(c);
-                console.log(c.getWKT());
+                //console.log(c.getWKT());
             })
             map.register('click', function(lon, lat) {
-                //  that.showMsg(lon + ";" + lat);
+               that.showMsg(lon + ";" + lat);
                 var c = new NPMobile.Geometry.Circle({
                     lon: lon,
                     lat: lat
                 }, 10000);
                 map.addOverlay(c);
-                console.log(c.getWKT());
+                //console.log(c.getWKT());
             })
         }
     }
 
-    function createMap(mapConfig) {
+    function createMap(mapConfig,callback) {
         $.getJSON(mapConfig || 'mapConfig.json', function(json, textStatus) {
             map = new NPMobile.Map(viewerContainer, json);
             OpenLayers.Control.Navigation && map._map.addControl(new OpenLayers.Control.Navigation())
             demo.baidutrafficLayer();
-            demo.cluster();
+            callback && callback(map);            
         });
     }
-
-    createMap();
+    function testCluster(){
+        demo.cluster();
+    }
+    createMap(null,function(){
+        demo.mapClick();
+    });
 
     $(function() {
         $('input').click(function() {
