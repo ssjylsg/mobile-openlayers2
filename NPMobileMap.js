@@ -1,6 +1,6 @@
 window.NPMobile = {
     ISPOINTCONVERT: true,
-    VERSION: '1.4.2',
+    VERSION: '1.4.7',
     inherits: function(childCtor, parentCtor) {
         var p = parentCtor.prototype;
         var c = childCtor.prototype;
@@ -291,7 +291,7 @@ NPMobile.inherits(NPMobile.Layers.CustomerLayer, NPMobile.Layers.Layer);
 NPMobile.Geometry.ClusterMarker = function(point, showMarker, clientData) {
     this._point = point;
     this._clientData = clientData;
-    this.showMarker = showMarker;
+    this.showMarker = this.markType = showMarker;
     this._visible = true;
     var tempPoint = NPMobile.T.setPoint(this._map, point);
     this.geometry = {
@@ -593,6 +593,18 @@ NPMobile.Layers.ClusterLayer.prototype = {
         }
     },
     /**
+     * 清除聚合图层覆盖物
+     * @return 
+     */
+    removeAllOverlays: function() {
+        this._layer.removeAllFeatures();
+        this._markers = [];
+        this._layer.showMarker = {};
+        this._layer.events.triggerEvent("beforefeaturesadded", {
+            features: []
+        });
+    },
+    /**
      * 批量数据加载
      * @param {object}  markerList    
      * @param {Boolean} isComplete
@@ -683,7 +695,7 @@ NPMobile.Layers.ClusterLayer.prototype = {
                 var data = {
                     id: that.id,
                     eventType: "error",
-                    args: ['异常',result.code]
+                    args: ['异常', result.code]
                 };
                 window.WebViewJavascriptBridge.callHandler(
                     'NPMobileHelper.Event.Call', data,
@@ -996,6 +1008,13 @@ NPMobile.Map = function(mapContainer, mapInfo) {
         sattilateLayer: this._getLayers(mapInfo.sattilateLayer)
     };
     this._map.addLayers(this._mapJson.vectorLayer);
+    if (this._mapJson.sattilateLayer.length != 0) {
+        this._map.addLayers(this._mapJson.sattilateLayer);
+        this._mapJson.sattilateLayer.map(function(layer){
+            layer.setVisibility(false);
+        })
+    }
+
     this._defaultLayer = new OpenLayers.Layer.Vector("_默认图层", {
         rendererOptions: {
             zIndexing: true
@@ -1174,12 +1193,14 @@ NPMobile.Map.prototype = {
         if ((type === 'click' || type === 'touchend') && listener) {
             var clickFun = function(f) {
                 try {
-                    var c = NPMobile.T.getPoint(this, this.getLonLatFromPixel(f.xy));
-                    listener(c.lon + "", c.lat + "");
+                    var length = this.getFeatures(f, true).length;
+                    if (length == 0 && this.dragging == false) {
+                        var c = NPMobile.T.getPoint(this, this.getLonLatFromPixel(f.xy));
+                        listener(c.lon + "", c.lat + "");
+                    }
                 } catch (e) {
 
                 }
-                return false;
             };
             this._events["_" + type] = clickFun;
             this._map.events.register(type, this._map, clickFun);
@@ -1290,7 +1311,7 @@ NPMobile.Map.prototype = {
                             zoomOffset: 0
                         };
                         self._opts.fullExtent = [-180, -90, 180, 90];
-                        newLayer = new OpenLayers.Layer.TDTLayer(self.name, url, self._opts);
+                        newLayer = new OpenLayers.Layer.TDTLayer(url, layer.layerName, self._opts);
                         break;
                     case "gaode":
                     case "NPMapLib.Layers.GaoDeLayer":
@@ -1299,7 +1320,7 @@ NPMobile.Map.prototype = {
                             fullExtent: self.fullExtent,
                             isBaseLayer: self.isBaseLayer
                         };
-                        newLayer = new OpenLayers.Layer.gaode(url, self.name, self._opts);
+                        newLayer = new OpenLayers.Layer.gaode(self.name, layer.layerName, self._opts);
                         break;
                     case "google":
                     case "NPMapLib.Layers.GoogleOffLineLayer":
@@ -1310,7 +1331,7 @@ NPMobile.Map.prototype = {
                             isBaseLayer: self.isBaseLayer
                         };
                         self._opts.getURL = get_my_url;
-                        newLayer = new OpenLayers.Layer.TMS(url, self.name, self._opts);
+                        newLayer = new OpenLayers.Layer.TMS(self.name, layer.layerName, self._opts);
                         break;
                     case "baidu":
                     case "baiduVector":
@@ -1333,7 +1354,7 @@ NPMobile.Map.prototype = {
                     case "streetmap":
                     case "NPMapLib.Layers.OSMLayer":
                         url = url + "X=${x}&Y=${y}&L=${z}";
-                        newLayer = new OpenLayers.Layer.OSM(url, self.name, {
+                        newLayer = new OpenLayers.Layer.OSM(layer.layerName, url, {
                             isChian: false,
                             centerPoint: self.centerPoint,
                             isBaseLayer: self.isBaseLayer
@@ -1344,10 +1365,10 @@ NPMobile.Map.prototype = {
                         url = url + "X=${x}&Y=${y}&L=${z}";
                         self.tileOrigin = self.tileOrigin || new OpenLayers.LonLat(0, 0);
                         self.maxResolution = 2;
-                        newLayer = new OpenLayers.Layer.TMS_PGIS(url, self.name, self);
+                        newLayer = new OpenLayers.Layer.TMS_PGIS(layer.layerName, url, self);
                         break;
                     case "NPMapLib.Layers.QQMapLayer":
-                        newLayer = new OpenLayers.Layer.QQMap(url, self.name, self);
+                        newLayer = new OpenLayers.Layer.QQMap(layer.layerName, url, self);
                         break;
                     default:
                         break;
@@ -1431,13 +1452,13 @@ NPMobile.Map.prototype = {
         if (this._mapJson.vectorLayer) {
             if (this._mapJson.vectorLayer.length > 1) {
                 for (var i = 0; i < this._mapJson.vectorLayer.length; i++) {
-                    this._mapJson.vectorLayer[i].show();
+                    this._mapJson.vectorLayer[i].setVisibility(true);
                     this._mapJson.vectorLayer[i].setZIndex(this._mapJson.vectorLayer[0].getZIndex() + i + 1);
                 }
             }
             if (this._mapJson.sattilateLayer.length > 1) {
                 for (var i = this._mapJson.sattilateLayer.length - 1; i >= 1; i--) {
-                    this._mapJson.sattilateLayer[i].hide();
+                    this._mapJson.sattilateLayer[i].setVisibility(false);
                 }
             }
             if (this._mapJson.vectorLayer.length > 0) {
@@ -1455,13 +1476,13 @@ NPMobile.Map.prototype = {
         if (this._mapJson.sattilateLayer) {
             if (this._mapJson.sattilateLayer.length > 1) {
                 for (var i = this._mapJson.sattilateLayer.length - 1; i >= 1; i--) {
-                    this._mapJson.sattilateLayer[i].show();
+                    this._mapJson.sattilateLayer[i].setVisibility(true);
                     this._mapJson.sattilateLayer[i].setZIndex(this._mapJson.sattilateLayer[0].getZIndex() + i + 1);
                 }
             }
             if (this._mapJson.vectorLayer.length > 1) {
                 for (var i = this._mapJson.vectorLayer.length - 1; i >= 1; i--) {
-                    this._mapJson.vectorLayer[i].hide();
+                    this._mapJson.vectorLayer[i].setVisibility(false);
                 }
             }
             if (this._mapJson.sattilateLayer.length > 0) {
@@ -1799,7 +1820,7 @@ NPMobile.Map.prototype = {
             }
         },
         ToLL: function(b) {
-             b.lng = b.lon;
+            b.lng = b.lon;
             var c,
                 e = new H(Math.abs(b.lng), Math.abs(b.lat));
             for (var i = 0; i < this.lG.length; i++) {
@@ -1990,16 +2011,22 @@ window.NPMobileHelper = {
                 result = new NPMobile.Layers.ClusterLayer(obj.name, obj.options);
                 result.register('getUrl', function(count, data) {
                     if (count != '') {
-                        return obj.options.clusterImage.url;
+                        return obj.options.clusterImage[data.markType] ? obj.options.clusterImage[data.markType].url : obj.options.clusterImage.url;
                     } else {
-                        return data.getData().image.url || obj.options.singleImage.url;
+                        if (data.getData() && data.getData().image) {
+                            return data.getData().image.url;
+                        }
+                        return (obj.options.singleImage[data.markType] ? obj.options.singleImage[data.markType].url : obj.options.singleImage.url);
                     }
                 });
                 result.register('getImageSize', function(count, data) {
                     if (count != '') {
-                        return obj.options.clusterImage.imageSize;
+                        return obj.options.clusterImage[data.markType] ? obj.options.clusterImage[data.markType].imageSize : obj.options.clusterImage.imageSize;
                     } else {
-                        return data.getData().image.imageSize || obj.options.singleImage.imageSize;
+                        if (data.getData() && data.getData().image) {
+                            return data.getData().image.imageSize;
+                        }
+                        return obj.options.singleImage[data.markType] ? obj.options.singleImage[data.markType].imageSize : obj.options.singleImage.imageSize;
                     }
                 });
                 result.register('getContent', function() {
@@ -2008,7 +2035,7 @@ window.NPMobileHelper = {
                 break;
             case "_CM":
             case "NPMobile.Geometry.ClusterMarker":
-                result = new NPMobile.Geometry.ClusterMarker(obj.point, null, obj);
+                result = new NPMobile.Geometry.ClusterMarker(obj.point, obj.markType, obj);
                 break;
             case "NPMobile.Geometry.Polygon":
                 result = new NPMobile.Geometry.Polygon(obj.points, obj.style);

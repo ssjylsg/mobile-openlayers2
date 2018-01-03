@@ -2909,7 +2909,70 @@ OpenLayers.Map = OpenLayers.Class({
              }
          }
      },
-    
+     getSortLayers: function() {
+        var layers = this.layers.slice();
+        return layers.sort(function(l, o) {
+            return parseInt(l.getZIndex()) - parseInt(o.getZIndex())
+        });
+    },
+     getFeatures: function(evt, isCluster) {
+        var x = evt.offsetX,
+            y = evt.offsetY,
+            features = [],
+            targets = [],
+            layers = [],
+            layer, target, feature, i, len;
+        // go through all layers looking for targets
+        var mapLayers = this.getSortLayers();
+        if(!this.useMultiMarkers){
+            var canvasLayers = this.viewPortDiv.getElementsByTagName("canvas");
+            var newCanvasLayers = [];
+            for (var i = 0; i < canvasLayers.length; i++) {
+                if(canvasLayers[i].parentElement == this.viewPortDiv && canvasLayers[i].style.display!=="none"){
+                    newCanvasLayers.push(canvasLayers[i]);
+                    canvasLayers[i].style.display = "none";
+                }else if(canvasLayers[i].parentElement.className==="olScrollable" && canvasLayers[i].parentElement.style.display !== "none"){
+                    newCanvasLayers.push(canvasLayers[i]);
+                    canvasLayers[i].parentElement.style.display = "none";
+                }
+            }
+        }
+        for (i = mapLayers.length - 1; i >= 0; --i) {
+            layer = mapLayers[i];
+            if (layer.div.style.display !== "none") {
+                if (layer.renderer instanceof OpenLayers.Renderer.Elements) {
+                    if (layer instanceof OpenLayers.Layer.Vector) {
+                        feature = layer.getFeatureFromEvent(evt);
+                        if (feature) {
+                            features.push(feature);
+                            break;
+                        }
+                        layers.push(layer);
+                        layer.div.style.display = "none";
+                    }
+                } else if (layer.renderer && (layer.renderer instanceof OpenLayers.Renderer.Canvas)) {
+                    feature = layer.getFeatureFromEvent(evt);
+                    if (feature) {
+                        features.push(feature);
+                        layers.push(layer);
+                    }
+                }
+            }
+        }
+        for (i = layers.length - 1; i >= 0; --i) {
+            layers[i].div.style.display = "block";
+        }
+        if(!this.useMultiMarkers){
+            for (var i = 0; i < newCanvasLayers.length; i++) {
+                if(newCanvasLayers[i].parentElement == this.viewPortDiv){
+                    newCanvasLayers[i].style.display = "block";
+                }else if(newCanvasLayers[i].parentElement.className==="olScrollable"){
+                    newCanvasLayers[i].parentElement.style.display = "block";
+                }
+            }
+        }
+        return features;
+    },
     CLASS_NAME: "OpenLayers.Map"
 });
 

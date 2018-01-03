@@ -331,20 +331,20 @@ OpenLayers.Control.SelectFeature = OpenLayers.Class(OpenLayers.Control, {
      */
     clickFeature: function(feature) {
         if(!this.hover) {
-            var selected = (OpenLayers.Util.indexOf(
-                feature.layer.selectedFeatures, feature) > -1);
-            if(selected) {
-                if(this.toggleSelect()) {
-                    this.unselect(feature);
-                } else if(!this.multipleSelect()) {
-                    this.unselectAll({except: feature});
-                }
-            } else {
-                if(!this.multipleSelect()) {
-                    this.unselectAll({except: feature});
-                }
+            // var selected = (OpenLayers.Util.indexOf(
+            //     feature.layer.selectedFeatures, feature) > -1);
+            // if(selected) {
+            //     if(this.toggleSelect()) {
+            //         this.unselect(feature);
+            //     } else if(!this.multipleSelect()) {
+            //         this.unselectAll({except: feature});
+            //     }
+            // } else {
+            //     if(!this.multipleSelect()) {
+            //         this.unselectAll({except: feature});
+            //     }
                 this.select(feature);
-            }
+            // }
         }
     },
 

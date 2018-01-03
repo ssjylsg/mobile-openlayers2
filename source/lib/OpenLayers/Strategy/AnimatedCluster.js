@@ -291,7 +291,13 @@ OpenLayers.Strategy.AnimatedCluster = OpenLayers.Class(OpenLayers.Strategy.Clust
         var xEnd = this.binarySearch(this._xData, xmax, 'x');
         var newXData = [];
         if (xStart == xEnd && (xStart == this._xData.length - 1 || xStart == 0)) {
-            newXData = [];
+            if(xStart == xEnd && xStart == 0){
+                newXData = this._xData.slice(xStart, xEnd + 1);
+            }else if(xStart == xEnd && xStart == this._xData.length-1){
+               newXData = this._xData.slice(xStart);
+            }else{
+                newXData = [];
+            }
         } else {
             newXData = this._xData.slice(xStart, xEnd + 1);
         }
@@ -624,6 +630,8 @@ OpenLayers.Strategy.AnimatedCluster = OpenLayers.Class(OpenLayers.Strategy.Clust
         if (!this.clustering) {
             this.clearCache();
             this.features = event.features;
+            this.clusters = [];
+            this.oldClusters = [];
             this._clusterDataStatus = this.features.slice();
             this._xData =
                 this._clusterDataStatus.slice().sort(function(f, f1) {
@@ -893,7 +901,7 @@ OpenLayers.Strategy.AnimatedCluster = OpenLayers.Class(OpenLayers.Strategy.Clust
         this._clusterDataStatus = newXData.slice();
 
         for (var i = this._clusterDataStatus.length - 1; i >= 0; i--) {
-            var f = this._clusterDataStatus[i].data;
+            var f = this._clusterDataStatus[i];
             if (filterFun(f)) {
                 newList.push(f);
             }
