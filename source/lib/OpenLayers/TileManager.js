@@ -215,7 +215,8 @@ OpenLayers.TileManager = OpenLayers.Class({
         if (layer instanceof OpenLayers.Layer.Grid) {
             layer.events.on({
                 addtile: this.addTile,
-                retile: this.clearTileQueue,
+                refresh: this.handleLayerRefresh,
+                retile: this.clearTileQueue,                
                 scope: this
             });
             var i, j, tile;
@@ -226,6 +227,20 @@ OpenLayers.TileManager = OpenLayers.Class({
                     if (tile.url && !tile.imgDiv) {
                         this.manageTileCache({object: tile});
                     }
+                }
+            }
+        }
+    },
+
+      handleLayerRefresh: function(evt) {
+        var layer = evt.object;
+        if (layer.grid) {
+            var i, j, tile;
+            for (i=layer.grid.length-1; i>=0; --i) {
+                for (j=layer.grid[i].length-1; j>=0; --j) {
+                    tile = layer.grid[i][j];
+                    OpenLayers.Util.removeItem(this.tileCacheIndex, tile.url);
+                    delete this.tileCache[tile.url];
                 }
             }
         }
@@ -246,6 +261,7 @@ OpenLayers.TileManager = OpenLayers.Class({
                 layer.events.un({
                     addtile: this.addTile,
                     retile: this.clearTileQueue,
+                    refresh: this.handleLayerRefresh,
                     scope: this
                 });
             }
@@ -352,14 +368,14 @@ OpenLayers.TileManager = OpenLayers.Class({
             img = null;
         }
         // queue only if image with same url not cached already
-        if (layer.url && (layer.async || !img)) {
-            // add to queue only if not in queue already
-            var tileQueue = this.tileQueue[layer.map.id];
-            if (!~OpenLayers.Util.indexOf(tileQueue, tile)) {
-                tileQueue.push(tile);
-            }
-            queued = true;
-        }
+        // if (layer.url && (layer.async || !img)) {
+        //     // add to queue only if not in queue already
+        //     var tileQueue = this.tileQueue[layer.map.id];
+        //     if (!~OpenLayers.Util.indexOf(tileQueue, tile)) {
+        //         tileQueue.push(tile);
+        //     }
+        //     queued = true;
+        // }
         return !queued;
     },
     
