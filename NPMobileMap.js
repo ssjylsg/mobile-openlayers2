@@ -1,6 +1,6 @@
 window.NPMobile = {
     ISPOINTCONVERT: true,
-    VERSION: '1.4.7',
+    VERSION: '1.4.9',
     inherits: function(childCtor, parentCtor) {
         var p = parentCtor.prototype;
         var c = childCtor.prototype;
@@ -931,6 +931,7 @@ NPMobile.inherits(NPMobile.Geometry.Marker, NPMobile.Geometry.Curve);
  */
 NPMobile.Map = function(mapContainer, mapInfo) {
     this._events = [];
+    this.roads = [];
     this._selectControl = null;
     this._layers = [];
     // var geolocate = new OpenLayers.Control.Geolocate({
@@ -1010,7 +1011,7 @@ NPMobile.Map = function(mapContainer, mapInfo) {
     this._map.addLayers(this._mapJson.vectorLayer);
     if (this._mapJson.sattilateLayer.length != 0) {
         this._map.addLayers(this._mapJson.sattilateLayer);
-        this._mapJson.sattilateLayer.map(function(layer){
+        this._mapJson.sattilateLayer.map(function(layer) {
             layer.setVisibility(false);
         })
     }
@@ -1191,10 +1192,27 @@ NPMobile.Map.prototype = {
      */
     register: function(type, listener) {
         if ((type === 'click' || type === 'touchend') && listener) {
+            var that = this;
+            this.dragging = false;
+
+            this._map.events.register('movestart', this, function() {
+                this.dragging = true
+            });
+
+            this._map.events.register('moveend', this, function() {
+                this.dragging = false
+            });
+
             var clickFun = function(f) {
                 try {
                     var length = this.getFeatures(f, true).length;
-                    if (length == 0 && this.dragging == false) {
+                    if (length == 0 && that.dragging == false) {
+                        if (!f.xy) {
+                            f.xy = {
+                                x: f.changedTouches[0].clientX,
+                                y: f.changedTouches[0].clientY
+                            };
+                        }
                         var c = NPMobile.T.getPoint(this, this.getLonLatFromPixel(f.xy));
                         listener(c.lon + "", c.lat + "");
                     }
@@ -1270,7 +1288,13 @@ NPMobile.Map.prototype = {
         var centerArray = this._map.originCenter;
         var center = new OpenLayers.LonLat(centerArray[0], centerArray[1]);
         initZoom = initZoom || this._map.minZoom;
-        this._map.setCenter(center, initZoom);
+        this._map.setCenter(center, this.adjustZoom(initZoom));
+    },
+    adjustZoom: function(zoom) {
+        zoom = zoom || this._map.getZoom();
+        zoom = zoom > this._map.minZoom ? zoom : this._map.minZoom;
+        zoom = zoom < this._map.maxZoom ? zoom : this._map.maxZoom;
+        return zoom;
     },
     _getLayers: function(layers) {
         var get_my_url = function(bounds) {
@@ -1453,7 +1477,8 @@ NPMobile.Map.prototype = {
             if (this._mapJson.vectorLayer.length > 1) {
                 for (var i = 0; i < this._mapJson.vectorLayer.length; i++) {
                     this._mapJson.vectorLayer[i].setVisibility(true);
-                    this._mapJson.vectorLayer[i].setZIndex(this._mapJson.vectorLayer[0].getZIndex() + i + 1);
+                    var z = parseInt(this._mapJson.vectorLayer[0].getZIndex());
+                    this._mapJson.vectorLayer[i].setZIndex(z + i + 1);
                 }
             }
             if (this._mapJson.sattilateLayer.length > 1) {
@@ -1477,7 +1502,8 @@ NPMobile.Map.prototype = {
             if (this._mapJson.sattilateLayer.length > 1) {
                 for (var i = this._mapJson.sattilateLayer.length - 1; i >= 1; i--) {
                     this._mapJson.sattilateLayer[i].setVisibility(true);
-                    this._mapJson.sattilateLayer[i].setZIndex(this._mapJson.sattilateLayer[0].getZIndex() + i + 1);
+                    var z = parseInt(this._mapJson.sattilateLayer[0].getZIndex());
+                    this._mapJson.sattilateLayer[i].setZIndex(z + i + 1);
                 }
             }
             if (this._mapJson.vectorLayer.length > 1) {
@@ -1514,7 +1540,8 @@ NPMobile.Map.prototype = {
      */
     setCenter: function(point, zoom) {
         var tempPoint = NPMobile.T.setPoint(this._map, point);
-        this._map.setCenter(new OpenLayers.LonLat(tempPoint.lon, tempPoint.lat), zoom || this.getZoom());
+        zoom = this.adjustZoom(zoom || this.getZoom());
+        this._map.setCenter(new OpenLayers.LonLat(tempPoint.lon, tempPoint.lat), zoom);
     },
     /**
      * 设置地图层级
@@ -1522,7 +1549,8 @@ NPMobile.Map.prototype = {
      */
     setZoom: function(zoom) {
         var c = this._map.getCenter();
-        this._map.setCenter(c, zoom || this.getZoom());
+        zoom = this.adjustZoom(zoom || this.getZoom());
+        this._map.setCenter(c, zoom);
     },
     /**
      * 获取当前Zoom
@@ -1582,6 +1610,56 @@ NPMobile.Map.prototype = {
     saveClusterParmeters: function(obj) {
         window.NPMobileHelper._clusterParmeters = obj;
     },
+    /**
+     * 道路搜索
+     * @param  {string} roadName 道路名称
+     * @param  {string} netposa  服务地址 
+     * @param  {object} style    道路样式     
+     */
+    searchRoad: function(roadName, netposa, style) {
+        netposa = netposa || 'http://192.168.60.242:8088/netposa/';
+        roadName = roadName || '道路';
+        var g = new OpenLayers.Format.GeoJSON();
+        var map = this;
+        g.parseCoords.point = function(e) {
+            e = NPMobile.T.setPoint(map._map, {
+                lon: e[0],
+                lat: e[1]
+            });
+            return new OpenLayers.Geometry.Point(e.lon, e.lat);
+        }
+        var layer = this._defaultLayer;
+        style = style || {
+            strokeWidth: 5,
+            strokeColor: 'red',
+        };
+        $.getJSON(netposa + '/query/getRoadsByName?roadName=' + roadName, function(roads) {
+            if (roads && roads.length > 0) {
+                var list = [];
+
+                roads.map(function(road) {
+                    var fs = g.read(road.feature);
+                    fs.map(function(f) {
+                        f.style = style
+                        list.push(f);
+                    })
+                })
+
+                layer.addFeatures(list, {
+
+                });
+                var o = list[0].geometry.getCentroid();
+                map._map.panTo(new OpenLayers.LonLat(o.x, o.y));
+                list[0].flash(6);
+                window.setTimeout(function() {
+                    layer.destroyFeatures(list);
+                    list = [];
+                    delete list;
+                }, 5000);
+
+            }
+        })
+    }
 };
 (function() {
     var coordHelper = (function() {

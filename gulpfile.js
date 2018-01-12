@@ -141,7 +141,7 @@ gulp.task('release', function() {
     gulp.src(['NPMobileMap.js', 'measure.js']) //,'measure.js'
         .pipe(concat('NPMobileMap.js'))
         .pipe(rename('NPMobileMap.js'))
-        .pipe(uglify())
+      .pipe(uglify())
         .pipe(gulp.dest('./dist/'));
 
 

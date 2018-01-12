@@ -249,17 +249,17 @@
             //         that.showMsg('touchend:' + length + this.dragging);
             //     }
             // })
-            map.register('touchend', function(lon, lat) {
-                that.showMsg(lon + ";" + lat);
-            })
-            map.register('click', function(lon, lat) {
-                that.showMsg(lon + ";" + lat);
-                var c = new NPMobile.Geometry.Circle({
-                    lon: Number(lon),
-                    lat: Number(lat)
-                }, 10000);
-                map.addOverlay(c);
-            })
+            // map.register('touchend', function(lon, lat) {
+            //     that.showMsg(lon + ";" + lat);
+            // })
+            // map.register('click', function(lon, lat) {
+            //     that.showMsg(lon + ";" + lat);
+            //     var c = new NPMobile.Geometry.Circle({
+            //         lon: Number(lon),
+            //         lat: Number(lat)
+            //     }, 10000);
+            //     map.addOverlay(c);
+            // })
         }
     }
 
