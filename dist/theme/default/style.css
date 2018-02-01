@@ -268,8 +268,13 @@ div.olControlSaveFeaturesItemInactive {
 }
 
 .olFramedCloudPopupContent {
-    padding: 5px;
-    overflow: auto;
+     overflow: visible;
+    background-color: white;
+    border-width: 1px;
+    border-style: solid;
+    border-color: gray;
+    cursor: default;
+    border-radius: 4px;
 }
 
 .olControlNoSelect {
