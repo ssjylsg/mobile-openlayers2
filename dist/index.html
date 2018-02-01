@@ -260,6 +260,22 @@
             //     }, 10000);
             //     map.addOverlay(c);
             // })
+        },
+        addPopup: function() {
+            var p = map.getCenter();
+            var dom = $("<span></span>").html('哈哈')[0]
+            var info = new NPMobile.Symbols.InfoWindow(p, dom || '哈哈哈', {
+                autoSize: false,
+                offset: {
+                    width: 0,
+                    height: 0
+                },
+                width:200,
+                height:300,
+                iscommon: false
+            });
+            map.addPopup(info);
+            info.open();
         }
     }
 
@@ -278,6 +294,7 @@
     createMap(null, function(map) {
         window.NPMobileHelper._map = map;
         demo.mapClick();
+        map.hideScaleControl()
         demo.cluster();
     });
 

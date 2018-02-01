@@ -123,6 +123,7 @@ OpenLayers.Popup.Framed =
         this.groupDiv.style.left = "0px";
         this.groupDiv.style.height = "100%";
         this.groupDiv.style.width = "100%";
+        this.groupDiv.style.overflow = "visible";
     },
 
     /** 
@@ -137,24 +138,39 @@ OpenLayers.Popup.Framed =
         this.positionBlocks = null;
 
         //remove our blocks
-        for(var i = 0; i < this.blocks.length; i++) {
-            var block = this.blocks[i];
+        if(this.blocks){
+            for(var i = 0; i < this.blocks.length; i++) {
+                var block = this.blocks[i];
 
-            if (block.image) {
-                block.div.removeChild(block.image);
-            }
-            block.image = null;
+                if (block.image) {
+                    block.div.removeChild(block.image);
+                }
+                delete block.image;
+                block.image = null;
 
-            if (block.div) {
-                this.groupDiv.removeChild(block.div);
+                if (block.div) {
+                    this.groupDiv.removeChild(block.div);
+                }
+                block.div = null;
             }
-            block.div = null;
         }
+
         this.blocks = null;
 
         OpenLayers.Popup.Anchored.prototype.destroy.apply(this, arguments);
     },
+    moveTo: function(px) {
+        var oldRelativePosition = this.relativePosition;
+        this.relativePosition = this.calculateRelativePosition(px);
 
+        OpenLayers.Popup.prototype.moveTo.call(this, this.calculateNewPx(px));
+        
+        //if this move has caused the popup to change its relative position, 
+        // we need to make the appropriate cosmetic changes.
+        //if (this.relativePosition != oldRelativePosition) {
+            this.updateRelativePosition();
+        //}
+    },
     /**
      * APIMethod: setBackgroundColor
      */
@@ -321,6 +337,8 @@ OpenLayers.Popup.Framed =
     
                 var h = (isNaN(positionBlock.size.h)) ? this.size.h - (b + t) 
                                                       : positionBlock.size.h;
+
+                b = b -h;
     
                 block.div.style.width = (w < 0 ? 0 : w) + 'px';
                 block.div.style.height = (h < 0 ? 0 : h) + 'px';

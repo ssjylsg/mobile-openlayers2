@@ -45,7 +45,26 @@ OpenLayers.Layer.gaode = OpenLayers.Class(OpenLayers.Layer.TMS, {
                 }
             }
         }
-
+        var tempUrl = this.url;
+        if (OpenLayers.Util.isArray(this.url)) {
+            var index = (x + y) % this.url.length;
+            tempUrl = this.url[index];
+        }
+        if (tempUrl.indexOf("$") > -1) {
+            if (tempUrl.indexOf("trafficTile") > -1) {
+                return OpenLayers.String.format(tempUrl, {
+                    'x': x,
+                    'y': y,
+                    'z': 17 - z
+                }) + "&t=" + new Date().getTime();
+            }
+            return OpenLayers.String.format(tempUrl, {
+                'x': x,
+                'y': y,
+                'z': z
+            }) + "&imgCache=" + (this.imgCache ? 'true' : 'false');
+        }
+        
         if (!this.isLocalMap) {
             if (OpenLayers.Util.isArray(this.url)) {
                 var serverNo = (x + y) % this.url.length;

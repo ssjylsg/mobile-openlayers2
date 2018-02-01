@@ -1,6 +1,6 @@
 window.NPMobile = {
     ISPOINTCONVERT: true,
-    VERSION: '1.4.9',
+    VERSION: '1.5.0',
     inherits: function(childCtor, parentCtor) {
         var p = parentCtor.prototype;
         var c = childCtor.prototype;
@@ -943,15 +943,16 @@ NPMobile.Map = function(mapContainer, mapInfo) {
     //         timeout: 7000
     //     }
     // });
+    this._scaleControl = new OpenLayers.Control.ScaleLine({
+        bottomOutUnits: ''
+    });
     mapInfo.mapOpts.controls = [new OpenLayers.Control.TouchNavigation({
             dragPanOptions: {
                 enableKinetic: true
             }
         }), //geolocate, 
         //new OpenLayers.Control.Zoom(),
-        new OpenLayers.Control.ScaleLine({
-            bottomOutUnits: ''
-        })
+        this._scaleControl
     ];
     mapInfo.mapOpts.centerPoint = mapInfo.mapOpts.centerPoint || mapInfo.vectorLayer[0].layerOpt.centerPoint;
     mapInfo.mapOpts.zoom = mapInfo.mapOpts.defaultZoom || mapInfo.mapOpts.minZoom;
@@ -1147,6 +1148,12 @@ NPMobile.Map.prototype = {
     //     //console.log(result);
     // },
     /**
+     * 隐藏比例尺     
+     */
+    hideScaleControl: function() {
+        this._scaleControl && (this._map.removeControl(this._scaleControl), this._scaleControl = null)
+    },
+    /**
      * 设置百度地图流量监控图层是否可见
      * @param {Boolean} isVisable  
      */
@@ -1232,6 +1239,15 @@ NPMobile.Map.prototype = {
      */
     addOverlay: function(overlayer) {
         this._defaultLayer.addFeatures([overlayer._vector]);
+    },
+    /**
+     * 新增信息窗
+     * @param {[type]} popup 
+     */
+    addPopup: function(popup) {
+        popup.setMap(this);
+        map._map.addPopup(popup._popup);
+        popup.hide();
     },
     /**
      * 注销事件
@@ -1617,7 +1633,7 @@ NPMobile.Map.prototype = {
      * @param  {object} style    道路样式     
      */
     searchRoad: function(roadName, netposa, style) {
-        netposa = netposa || 'http://192.168.60.242:8088/netposa/';
+        netposa = netposa || 'http://218.246.85.253:8888/netposa/';
         roadName = roadName || '道路';
         var g = new OpenLayers.Format.GeoJSON();
         var map = this;
@@ -1633,12 +1649,12 @@ NPMobile.Map.prototype = {
             strokeWidth: 5,
             strokeColor: 'red',
         };
-        $.getJSON(netposa + '/query/getRoadsByName?roadName=' + roadName, function(roads) {
+        $.getJSON(netposa + '/query/getFOIByName?keyWordString=' + roadName, function(roads) {
             if (roads && roads.length > 0) {
                 var list = [];
 
                 roads.map(function(road) {
-                    var fs = g.read(road.feature);
+                    var fs = g.read(road.feature || road.wkt);
                     fs.map(function(f) {
                         f.style = style
                         list.push(f);
@@ -2181,5 +2197,76 @@ window.NPMobileHelper = {
         // }
         var result = np[args[0]].apply(np, methodArgs);
         return JSON.stringify(result);
+    }
+};
+
+NPMobile.Symbols = {};
+
+/**
+ * 信息窗
+ * @param {NPMobile.Geometry.Point} point   
+ * @param {HTMLDOM | String} content [description]
+ * @param {object} opts    [description]
+ * @param {object} opts.offset
+ * @param {number} opts.offset.width
+ * @param {number} opts.offset.height
+ * @param {bool} opts.autoSize
+ * @param {number} opts.width
+ * @param {number} opts.height
+ */
+NPMobile.Symbols.InfoWindow = function(point, content, opts) {
+    opts = opts || {
+        iscommon: true,
+        offset: {
+            width: 0,
+            height: 0
+        },
+        autoSize: false,
+    };
+    this.opts = opts;
+    this._point = point;
+    this._content = content;
+};
+
+NPMobile.Symbols.InfoWindow.prototype = {
+    setMap: function(map) {
+        this._map = map;
+        var opts = this.opts;
+        var position = NPMobile.T.setPoint(map._map, this._point);
+        var size = new OpenLayers.Size(opts.width || 200, opts.height || 200);
+        var offset = this.opts.offset || {
+            width: 0,
+            height: 0
+        };
+        var html = typeof this._content == "object" ? '' : this._content;
+        if (this.opts.iscommon) {
+            this._popup = new OpenLayers.Popup.Anchored('npgis', new OpenLayers.LonLat(position.lon, position.lat), size, html, {
+                size: new OpenLayers.Size(1, 1),
+                offset: new OpenLayers.Pixel(offset.width, offset.height)
+            }, false, null);
+        } else {
+            this._popup = new OpenLayers.Popup.FramedCloud('npgis', new OpenLayers.LonLat(position.lon, position.lat), size, html, {
+                size: new OpenLayers.Size(1, 1),
+                offset: new OpenLayers.Pixel(offset.width, offset.height)
+            }, false, null);
+        }
+        this._popup.autoSize = this.opts.autoSize;
+        typeof this._content == "object" && (this._popup.setContentDom(this._content))
+    },
+    open: function() {
+        this._popup.show();
+    },
+    hide: function() {
+        this._popup.hide();
+    },
+    show: function() {
+        this._popup.show();
+    },
+    remove: function() {
+        this._map.removePopup(this._popup);
+        this._popup.destroy();
+        this._map = null;
+        this.opts = null;
+        this._content = null;
     }
 };

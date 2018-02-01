@@ -132,7 +132,11 @@ gulp.task('release', function() {
         'OpenLayers/Strategy/AnimatedCluster.js',
         'OpenLayers/Rule.js',
         'OpenLayers/Control/Measure.js',
-        'OpenLayers/Control/ScaleLine.js'
+        'OpenLayers/Control/ScaleLine.js',
+        "OpenLayers/Popup.js",
+        "OpenLayers/Popup/Anchored.js",
+        "OpenLayers/Popup/Framed.js",
+        "OpenLayers/Popup/FramedCloud.js",
     ];
     for (var i = lib.length - 1; i >= 0; i--) {
         lib[i] = 'source/lib/' + lib[i];
@@ -141,7 +145,7 @@ gulp.task('release', function() {
     gulp.src(['NPMobileMap.js', 'measure.js']) //,'measure.js'
         .pipe(concat('NPMobileMap.js'))
         .pipe(rename('NPMobileMap.js'))
-      .pipe(uglify())
+        .pipe(uglify())
         .pipe(gulp.dest('./dist/'));
 
 
