@@ -103,6 +103,23 @@ NPMobile.Tool.Measure.prototype = {
         }
         this._map.addControl(control);
         control.activate();
+        if (!callBack) {
+            var data = {
+                id: this.id,
+                eventType: 'MeasureCompleted',
+                args: Array.prototype.slice.call(arguments)
+            };
+            callBack = function() {
+                data.args = Array.prototype.slice.call(arguments);
+                window.WebViewJavascriptBridge.callHandler(
+                    'NPMobileHelper.Event.Call', data,
+                    function(responseData) {
+
+                    }
+                );
+            }
+
+        }
         var current = {
             vectors: [],
             layer: this._measureLayer,
@@ -115,6 +132,7 @@ NPMobile.Tool.Measure.prototype = {
                 }
             }
         };
+        this.currentControl = control;
         control.events.listeners = {};
         control.events.on({
             "scope": this,
@@ -333,6 +351,29 @@ NPMobile.Tool.Measure.prototype = {
      * 清楚测量工具     
      */
     remove: function() {
+        // for (var k in this._measureControls) {
+        //     this._map.removeControl(this._measureControls[k]);
+        // }
+
+        if (this.currentControl && this.currentControl.handler) {
+            this.currentControl.handler.finishGeometry();
+        }
+
+
+
+        this._measureLayer.removeAllFeatures();
+        //this._map.removeLayer(this._measureLayer);
+    },
+    /**
+     * 销毁函数
+     * @return 
+     */
+    destory: function() {
+
+        if (this.currentControl && this.currentControl.handler) {
+            this.currentControl.handler.finishGeometry();
+        }
+
         for (var k in this._measureControls) {
             this._map.removeControl(this._measureControls[k]);
         }

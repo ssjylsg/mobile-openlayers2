@@ -1,6 +1,6 @@
 window.NPMobile = {
     ISPOINTCONVERT: true,
-    VERSION: '1.5.0',
+    VERSION: '1.5.9',
     inherits: function(childCtor, parentCtor) {
         var p = parentCtor.prototype;
         var c = childCtor.prototype;
@@ -394,7 +394,15 @@ NPMobile.Layers.ClusterLayer = function(name, opts) {
                 }
                 var clusters = f.layer;
                 if (f.cluster && f.cluster.length > 1) {
-                    f.layer.map.setCenter(f.layer.map.getCenter(), f.layer.map.getZoom() + 1)
+                    if (opts.clusterMarkerClickZoom && f.layer.map.getZoom() >= opts.clusterMarkerClickZoom) {
+                        var ids = [];
+                        f.cluster.map(function(c) {
+                            ids.push(c.id);
+                        })
+                        that._trigger('clusterClick', ids);
+                    } else {
+                        f.layer.map.setCenter(f.layer.map.getCenter(), f.layer.map.getZoom() + 1);
+                    }
                     return;
                 }
                 var clientData;
@@ -471,15 +479,18 @@ NPMobile.Layers.ClusterLayer = function(name, opts) {
             getlabelYOffset: function(f) {
                 var counts = f.getCount();
                 var data = f.getData();
+                var h = that._trigger('getCustomLabelOffset', counts, data);
+                if (h) {
+                    return h.height;
+                }
+                if (opts.customLabelOffset) {
+                    return opts.customLabelOffset.h;
+                }
                 var size = that._trigger('getImageSize', counts, data);
                 if (counts) {
                     return size.h / 2;
-                } else {
-                    if (opts.customLabelOffset) {
-                        return opts.customLabelOffset.h;
-                    }
-                    return that._trigger('getCustomLabelOffset', counts, data);
                 }
+                return 0;
             },
             getLabelFontColor: function(f) {
                 var counts = f.getCount();
@@ -594,7 +605,6 @@ NPMobile.Layers.ClusterLayer.prototype = {
     },
     /**
      * 清除聚合图层覆盖物
-     * @return 
      */
     removeAllOverlays: function() {
         this._layer.removeAllFeatures();
@@ -613,7 +623,7 @@ NPMobile.Layers.ClusterLayer.prototype = {
         var markers = markerList.list;
         var image = markerList.defaultUrl;
         for (var i = 0; i < markers.length; i++) {
-            markers[i].image || (markers[i].image = image)
+            (markers[i].image || (markers[i].image = image));
             var m = new NPMobile.Geometry.ClusterMarker({
                 lon: markers[i].lon || markers[i].longitude,
                 lat: markers[i].lat || markers[i].latitude
@@ -643,7 +653,7 @@ NPMobile.Layers.ClusterLayer.prototype = {
 
             }
         );
-        console.log((new Date()).getTime())
+        console.log((new Date()).getTime());
     },
     /**
      * 移动端请求大数据
@@ -653,7 +663,7 @@ NPMobile.Layers.ClusterLayer.prototype = {
      */
     addOverlaysForMobile: function(mobileObj) {
         var that = this;
-        console.log((new Date()).getTime())
+        console.log((new Date()).getTime());
         if (window.httpRequest) {
             window.httpRequest.abort();
         }
@@ -883,6 +893,7 @@ NPMobile.Geometry.Point.getPoint = function(lon, lat) {
  */
 NPMobile.Geometry.Marker = function(point, markerParam) {
     NPMobile.Geometry.Curve.call(this, point);
+    markerParam || (markerParam = {})
     var style = {
         graphicWidth: markerParam.graphicWidth,
         graphicHeight: markerParam.graphicHeight,
@@ -891,6 +902,11 @@ NPMobile.Geometry.Marker = function(point, markerParam) {
         externalGraphic: markerParam.externalGraphic,
         graphicZIndex: markerParam.graphicZIndex
     };
+    for (var k in markerParam) {
+        if (markerParam[k]) {
+            style[k] = markerParam[k];
+        }
+    }
     var tempPoint = NPMobile.T.setPoint(this._map, point);
     this._vector = new OpenLayers.Feature.Vector(new OpenLayers.Geometry.Point(tempPoint.lon, tempPoint.lat),
         this, style);
@@ -1153,6 +1169,9 @@ NPMobile.Map.prototype = {
     hideScaleControl: function() {
         this._scaleControl && (this._map.removeControl(this._scaleControl), this._scaleControl = null)
     },
+    getResolutions: function() {
+        return this._map.baseLayer.resolutions.join(',');
+    },
     /**
      * 设置百度地图流量监控图层是否可见
      * @param {Boolean} isVisable  
@@ -1198,7 +1217,7 @@ NPMobile.Map.prototype = {
      * @param  {functon} listener      
      */
     register: function(type, listener) {
-        if ((type === 'click' || type === 'touchend') && listener) {
+        if ((type === 'click' || type === 'touchend' || type === 'moveend') && listener) {
             var that = this;
             this.dragging = false;
 
@@ -1208,27 +1227,35 @@ NPMobile.Map.prototype = {
 
             this._map.events.register('moveend', this, function() {
                 this.dragging = false
+                if (that._events["_moveend"]) {
+                    that._events["_moveend"]();
+                }
             });
 
-            var clickFun = function(f) {
-                try {
-                    var length = this.getFeatures(f, true).length;
-                    if (length == 0 && that.dragging == false) {
-                        if (!f.xy) {
-                            f.xy = {
-                                x: f.changedTouches[0].clientX,
-                                y: f.changedTouches[0].clientY
-                            };
+            if (type != 'moveend') {
+                var clickFun = function(f) {
+                    try {
+                        var length = this.getFeatures(f, true).length;
+                        if (length == 0 && that.dragging == false) {
+                            if (!f.xy) {
+                                f.xy = {
+                                    x: f.changedTouches[0].clientX,
+                                    y: f.changedTouches[0].clientY
+                                };
+                            }
+                            var c = NPMobile.T.getPoint(this, this.getLonLatFromPixel(f.xy));
+                            listener(c.lon + "", c.lat + "");
                         }
-                        var c = NPMobile.T.getPoint(this, this.getLonLatFromPixel(f.xy));
-                        listener(c.lon + "", c.lat + "");
-                    }
-                } catch (e) {
+                    } catch (e) {
 
-                }
-            };
-            this._events["_" + type] = clickFun;
-            this._map.events.register(type, this._map, clickFun);
+                    }
+                };
+                this._map.events.register(type, this._map, clickFun);
+                this._events["_" + type] = clickFun;
+            } else {
+                this._events["_" + type] = listener;
+            }
+
         } else {
             this._events["_" + type] = listener;
         }
@@ -1242,7 +1269,7 @@ NPMobile.Map.prototype = {
     },
     /**
      * 新增信息窗
-     * @param {[type]} popup 
+     * @param {NPMobile.Symbols.InfoWindow} popup 
      */
     addPopup: function(popup) {
         popup.setMap(this);
@@ -1670,7 +1697,7 @@ NPMobile.Map.prototype = {
                 window.setTimeout(function() {
                     layer.destroyFeatures(list);
                     list = [];
-                    delete list;
+                    //delete list;
                 }, 5000);
 
             }
@@ -2064,6 +2091,9 @@ window.NPMobileHelper = {
                 break;
             case 'NPMobile.Tool.Measure':
                 result = new NPMobile.Tool.Measure(this._objs[obj.map.id]);
+                break;
+            case 'NPMobile.Geometry.LineString':
+                result = new NPMobile.Geometry.LineString(obj.points, obj.style);
                 break;
             case 'NPMobile.Layers.CustomerLayer':
                 result = new NPMobile.Layers.CustomerLayer(obj.name);
