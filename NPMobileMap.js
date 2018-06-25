@@ -1,6 +1,6 @@
 window.NPMobile = {
     ISPOINTCONVERT: true,
-    VERSION: '1.5.9',
+    VERSION: '1.6.1',
     inherits: function(childCtor, parentCtor) {
         var p = parentCtor.prototype;
         var c = childCtor.prototype;
@@ -935,6 +935,16 @@ NPMobile.Geometry.Marker.prototype = {
             this._vector.style[k] = style[k];
         }
         this.refresh();
+    },
+    /**
+     * Marker 移动
+     * @param {NPMobile.Geometry.Point} newPoint 新坐标
+     */
+    setPoint: function(newPoint) {
+        if(newPoint){
+            var tempPoint = NPMobile.T.setPoint(this._map, newPoint);
+            this._vector.move(new OpenLayers.LonLat(tempPoint.lon, tempPoint.lat));
+        }
     }
 };
 NPMobile.inherits(NPMobile.Geometry.Marker, NPMobile.Geometry.Curve);

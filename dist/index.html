@@ -112,6 +112,7 @@
     <script src="OpenLayers.js"></script>
     <!-- <script src="../source/lib/OpenLayers.js"></script> -->
     <script src="NPMobileMap.js"></script>
+    <!-- <script src="../measure.js"></script> -->
     <script src="WebViewJavascriptBridge.js"></script>
     <script src="../source/lib/OpenLayers/Control/Navigation.js"></script>
     <script src="../source/lib/OpenLayers/Control/ZoomBox.js"></script>
@@ -135,6 +136,13 @@
         tool,
         marker = null;
     var demo = {
+        measure:function(){
+            var tool = new NPMobile.Tool.Measure(map);
+            tool.setMode(NPMobile.Tool.MeasureMode.DISTANCE,function(r){
+                console.log(r);
+            })
+            window.tool = tool;
+        },
         createMarker: function() {
             function createMarker(point, name, f) {
                 var layer = new NPMobile.Layers.CustomerLayer(name);
@@ -203,7 +211,7 @@
                 map.addLayer(clusterLayer);
             }
 
-            for (var i = 0; i < 4; i++) {
+            for (var i = 0; i < 40; i++) {
                 markers.push(new NPMobile.Geometry.ClusterMarker(new NPMobile.Geometry.Point(c.lon + Math.random() * Math.pow(-1, i) * 0.01, c.lat + Math.random() * Math.pow(-1, i + 1) * 0.01), i % 2 == 0 ? "偶数" : "奇数"));
             }
             clusterLayer.addOverlays(markers, true);

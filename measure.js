@@ -13,19 +13,27 @@ NPMobile.Tool = {
 NPMobile.Tool.Measure = function(map) {
     var sketchSymbolizers = {
         "Point": {
-            pointRadius: 4,
-            graphicName: "circle",
-            fillColor: "white",
-            fillOpacity: 1,
-            strokeWidth: 0.5,
-            strokeOpacity: 1,
-            strokeColor: "red",
-            cursor: 'inherit'
+            // pointRadius: 4,
+            // graphicName: "circle",
+            // fillColor: "white",
+            // fillOpacity: 1,
+            // strokeWidth: 0.5,
+            // strokeOpacity: 1,
+            // strokeColor: "red",
+            // cursor: 'inherit'
+            "pointRadius": 5,
+            "graphicName": "circle",
+            "fillColor": "red",
+            "fillOpacity": 1,
+            "strokeWidth": 1.5,
+            "strokeOpacity": 1,
+            "strokeColor": "red",
+            "strokeDashstyle": "solid"
         },
         "Line": {
             strokeWidth: 1.5,
             strokeOpacity: 1,
-            strokeColor: "#ff0000"
+            strokeColor: "red"
         },
         "Polygon": {
             strokeWidth: 1.5,
@@ -120,17 +128,22 @@ NPMobile.Tool.Measure.prototype = {
             }
 
         }
+        var that = this;
         var current = {
             vectors: [],
             layer: this._measureLayer,
             map: this._map,
+            remove: function() {
+
+            },
             success: function(result) {
                 control.deactivate();
                 this.map.removeControl(control);
                 if (callBack) {
                     callBack(result);
                 }
-            }
+            },
+            popups: []
         };
         this.currentControl = control;
         control.events.listeners = {};
@@ -152,13 +165,14 @@ NPMobile.Tool.Measure.prototype = {
             breakPoints = [],
             geometry = event.geometry,
             style = {
-                pointRadius: 4,
-                graphicName: "circle",
-                fillColor: "white",
-                fillOpacity: 1,
-                strokeWidth: 1.5,
-                strokeOpacity: 1,
-                strokeColor: "red"
+                "pointRadius": 5,
+                "graphicName": "circle",
+                "fillColor": "red",
+                "fillOpacity": 1,
+                "strokeWidth": 1.5,
+                "strokeOpacity": 1,
+                "strokeColor": "red",
+                "strokeDashstyle": "solid"
             },
             prePoint = geometry.components[geometry.components.length - 2],
             point = geometry.components[geometry.components.length - 1],
@@ -166,41 +180,7 @@ NPMobile.Tool.Measure.prototype = {
                 'km': '千米',
                 'm': '米'
             };
-        if (event.order === 1) {
-            if (event.measure >= 1000) {
-                iconUrl = "110_15.gif"
-            } else if (event.measure >= 100) {
-                iconUrl = "100_15.gif"
-            } else if (event.measure >= 10) {
-                iconUrl = "90_15.gif"
-            } else {
-                iconUrl = "80_15.gif"
-            }
-
-
-            var w_h = iconUrl.substring(0, iconUrl.indexOf('.')).split('_');
-            var size = {
-                width: 20,
-                height: 10
-            }; // 删除图片大小
-            var xOffset = prePoint.x < point.x ? (size.width + Number(w_h[0])) / 2 : (-size.width - Number(w_h[0])) / 2;
-            var yOffset = 0;
-            var style = {
-                "label": "总长" + event.measure.toFixed(1) + unints[event.units],
-                "fontSize": 12,
-                'fontColor': 'red',
-                "fontFamily": "宋体",
-                'labelXOffset': 0 + xOffset,
-                'labelYOffset': 8 + yOffset,
-                "graphicWidth": Number(w_h[0]),
-                "graphicHeight": Number(w_h[1]),
-                'externalGraphic': OpenLayers.Util.getImageLocation(iconUrl),
-                'graphicXOffset': -Number(w_h[0]) / 2 + xOffset,
-                'graphicYOffset': -Number(w_h[1]),
-            };
-            var vector = new OpenLayers.Feature.Vector(new OpenLayers.Geometry.Point(point.x, point.y),
-                vector, style);
-            current.vectors.push(vector);
+        if (event.order === 1) {　
 
             if (geometry.components.length > 0) {
                 for (var i = 0; i < geometry.components.length; i++) {
@@ -210,32 +190,58 @@ NPMobile.Tool.Measure.prototype = {
             var multiPoint = new OpenLayers.Geometry.MultiPoint(breakPoints);
 
             multiFeature = new OpenLayers.Feature.Vector(multiPoint, null, {
-                pointRadius: 4,
-                graphicName: "circle",
-                fillColor: "white",
-                fillOpacity: 1,
-                strokeWidth: 1.5,
-                strokeOpacity: 1,
-                strokeColor: "red"
+                "pointRadius": 5,
+                "graphicName": "circle",
+                "fillColor": "red",
+                "fillOpacity": 1,
+                "strokeWidth": 1.5,
+                "strokeOpacity": 1,
+                "strokeColor": "red",
+                "strokeDashstyle": "solid"
             });
-            current.vectors.push(multiFeature);
-            style = {
-                graphicWidth: 12,
-                graphicHeight: 12,
-                graphicXOffset: xOffset + Number(w_h[0]) / 2 + (prePoint.x < point.x ? 0 : -8),
-                graphicYOffset: -Number(w_h[1])
-            };
-            style.externalGraphic = OpenLayers.Util.getImageLocation("close.gif");
-            vector = new OpenLayers.Feature.Vector(new OpenLayers.Geometry.Point(point.x, point.y), {
-                current: current
-            }, style);
-            current.vectors.push(vector);
+            current.vectors.push(multiFeature);　
             vector = new OpenLayers.Feature.Vector(geometry.clone(),
-                vector, {
+                null, {
                     strokeColor: 'red',
                     strokeLinecap: 'round'
                 });
             current.vectors.push(vector);
+
+            var unints = {
+                'km': '千米',
+                'm': '米'
+            };
+
+            var label = '总长:' + event.measure.toFixed(1) + unints[event.units];
+            var id = Math.random() + '';
+            var html = '<div style="display: -webkit-box;"><div><span style="font-size: 12px;font-family: 微软雅黑;font-color:red">' + label + '</span>' +
+                '</div><div class="olPopupCloseBox" style="width: 17px; height: 17px;  right: 5px; top: 5px;"  id="' + id + '""></div></div>';
+
+            var xy = event.geometry.components[event.geometry.components.length - 1].clone();
+            var marker = new OpenLayers.Popup.Anchored('npgis', new OpenLayers.LonLat(xy.x, xy.y),
+                new OpenLayers.Size(80, 45), html, {
+                    size: new OpenLayers.Size(1, 1),
+                    offset: new OpenLayers.Pixel(12, -11)
+                },
+                false,
+                function() {
+
+                });
+            marker.autoSize = true;
+            current.map.addPopup(marker);
+            current.popups.push(marker);
+            var closeBox = document.getElementById(id);
+            if (closeBox) {
+                closeBox.addEventListener('click', function() {
+                    current.popups.map(function(popup) {
+                        current.map.removePopup(popup);
+                    })
+                    current.popups = [];
+                    current.layer.destroyFeatures(current.vectors)
+                    current.vectors = [];
+                })
+            }
+
 
         } else {
 
@@ -317,34 +323,38 @@ NPMobile.Tool.Measure.prototype = {
                 'km': '千米',
                 'm': '米'
             };
-            var label = event.measure.toFixed(1) + unints[event.units];
-            var style = {
-                "pointRadius": 4,
+
+            var label = '';
+            if (event.measure.toFixed(1) === '0.0') {
+                label = '起点';
+            } else {
+                label = event.measure.toFixed(1) + unints[event.units]
+            }
+            var html = '<span style="font-size: 12px;font-family: 微软雅黑;">' + label + '</span>';
+            var xy = event.geometry.components[event.geometry.components.length - 1].clone();
+            var id = Math.random() + '_npgis';
+            var marker = new OpenLayers.Popup.Anchored(id, new OpenLayers.LonLat(xy.x, xy.y),
+                new OpenLayers.Size(100, 50), html, {
+                    size: new OpenLayers.Size(1, 1),
+                    offset: new OpenLayers.Pixel(12, -11)
+                },
+                null, true);
+            marker.autoSize = true;
+            current.map.addPopup(marker);
+            current.popups.push(marker);
+
+            var pointFeature = new OpenLayers.Feature.Vector(new OpenLayers.Geometry.Point(xy.x, xy.y), null, {
+                "pointRadius": 5,
                 "graphicName": "circle",
-                "fillColor": "white",
+                "fillColor": "red",
                 "fillOpacity": 1,
                 "strokeWidth": 1.5,
                 "strokeOpacity": 1,
                 "strokeColor": "red",
-                "fontSize": 12,
-                'fontColor': 'red',
-                "fontFamily": "宋体",
-            };
-            if (event.measure.toFixed(1) === '0.0') {
-                style["label"] = '起点';
-                style['labelXOffset'] = 31;
-                style['labelYOffset'] = 4;
-                style['externalGraphic'] = OpenLayers.Util.getImageLocation("35_15.gif");
-                style['graphicHeight'] = 15;
-                style['graphicWidth'] = 35;
-                style['graphicXOffset'] = 15;
-                style['graphicYOffset'] = -10;
-            }
-
-            var vector = new OpenLayers.Feature.Vector(event.geometry.components[event.geometry.components.length - 1].clone(),
-                null, style);
-            current.vectors.push(vector);
-            current.layer.addFeatures([vector]);
+                "strokeDashstyle": "solid"
+            });
+            current.vectors.push(pointFeature);
+            current.layer.addFeatures([pointFeature]);
         }
     },
     /**
@@ -355,10 +365,15 @@ NPMobile.Tool.Measure.prototype = {
         //     this._map.removeControl(this._measureControls[k]);
         // }
 
-        if (this.currentControl && this.currentControl.handler) {
+        if (this.currentControl && this.currentControl.handler && this.currentControl.handler.active) {
             this.currentControl.handler.finishGeometry();
         }
 
+        var length = this._map.popups.length;
+        while (length != 0) {
+            this._map.removePopup(this._map.popups[length - 1]);
+            length = this._map.popups.length;
+        }
 
 
         this._measureLayer.removeAllFeatures();
@@ -370,10 +385,14 @@ NPMobile.Tool.Measure.prototype = {
      */
     destory: function() {
 
-        if (this.currentControl && this.currentControl.handler) {
+        if (this.currentControl && this.currentControl.handler && this.currentControl.handler.active) {
             this.currentControl.handler.finishGeometry();
         }
-
+        var length = this._map.popups.length;
+        while (length != 0) {
+            this._map.removePopup(this._map.popups[length - 1]);
+            length = this._map.popups.length;
+        }
         for (var k in this._measureControls) {
             this._map.removeControl(this._measureControls[k]);
         }
