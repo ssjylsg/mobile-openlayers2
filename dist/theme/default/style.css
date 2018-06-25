@@ -263,7 +263,7 @@ div.olControlSaveFeaturesItemInactive {
 }
 
 .olPopupCloseBox {
-  background: url("img/close.gif") no-repeat;
+  background: url("img/measureClose.png") 10px 9px no-repeat;
   cursor: pointer;
 }
 
